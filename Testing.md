@@ -54,6 +54,7 @@ Cover critical user journeys.
 26. TEAM_ADMIN can create, edit, order, feature, publish, unpublish, and delete team projects while MEMBER and unauthenticated callers are rejected.
 27. Project publication rejects incomplete records and invalid date ranges, and project deletion requires the current trusted slug.
 28. TEAM_ADMIN can assign, edit, and remove project members only after both referenced records are re-read; relationship fields cannot alter ownership or publication.
+29. TEAM_ADMIN can manage the Technology dictionary and project assignments; in-use technologies cannot be deleted and relationship input cannot alter either referenced record.
 
 ## Public-page tests
 

@@ -246,6 +246,11 @@ mutations must re-read both the Project and Member from the database, allowlist 
 and contribution metadata, and audit the composite relationship. A Member's assignment
 never expands their authorization beyond their existing personal-profile ownership.
 
+Only TEAM_ADMIN may manage Technology or ProjectTechnology records. Shared technologies
+use restrictive deletion: the server re-reads the Technology and its project-reference
+count and refuses deletion while it is in use. Project-technology mutations re-read both
+referenced records and cannot modify Project publication, ownership, or Member data.
+
 ### Mass-assignment protection
 
 Use explicit allowlists when creating Prisma `data` objects. Never spread a raw request body into a Prisma create or update call.

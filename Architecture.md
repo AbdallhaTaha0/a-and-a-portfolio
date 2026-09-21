@@ -214,6 +214,13 @@ edit their project role and contribution, or explicitly remove the relationship.
 server re-reads both referenced records, never treats participation as ownership, audits
 every relationship change, and revalidates the affected administrative and public paths.
 
+`/admin/technologies` manages the reusable Technology dictionary, while project detail
+editors manage ProjectTechnology assignments. Technology creation and editing allowlist
+name, category, and an optional secure icon URL. Deletion requires exact-name
+confirmation and is rejected while any ProjectTechnology relation exists, preserving the
+restrictive shared-dictionary semantics in the database. Assignment and removal re-read
+both sides of the relationship, are audited, and do not change project ownership.
+
 ## Rendering
 
 Public content should favor server rendering/caching where practical.

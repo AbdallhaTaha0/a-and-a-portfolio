@@ -74,6 +74,11 @@ optional contribution. The server re-reads both records before upserting the com
 relationship and requires explicit UI confirmation. Assignment does not grant project
 edit permission.
 
+Technology administration supports create, update, and confirmed deletion of reusable
+dictionary records plus assignment/removal on a Project. A Technology still referenced
+by any project cannot be deleted. Relationship mutations re-read the Project and
+Technology and audit the composite key.
+
 In the current server-action implementation, deleting `/admin/members/:id` means deleting
 the Member profile and its owned content after exact-slug confirmation. It does not delete
 the owning User. Active MEMBER accounts must be deactivated through the separate account

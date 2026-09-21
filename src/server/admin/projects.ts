@@ -71,6 +71,12 @@ export async function getAdminProjectById(projectId: string) {
           },
         },
       },
+      technologies: {
+        orderBy: { technology: { name: "asc" } },
+        select: {
+          technology: { select: { id: true, name: true, category: true } },
+        },
+      },
       _count: { select: { members: true, technologies: true, images: true } },
     },
   });

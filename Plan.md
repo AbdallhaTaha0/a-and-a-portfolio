@@ -159,7 +159,7 @@ Tasks:
 - [x] Preserve Member profile and content across promotion or demotion
 - [x] Project CRUD
 - [x] Project-member assignment
-- [ ] Technology management
+- [x] Technology management
 - [ ] Achievements
 - [ ] Testimonials if enabled
 - [ ] Contact messages

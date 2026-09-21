@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 
 import { DeleteProjectForm, ProjectForm } from "@/features/projects/project-form";
 import { ProjectMembersManager } from "@/features/projects/project-members-manager";
+import { ProjectTechnologiesManager } from "@/features/technologies/project-technologies-manager";
 import { getAdminProjectById, getProjectMemberCandidates } from "@/server/admin/projects";
+import { getAdminTechnologies } from "@/server/admin/technologies";
 import { requireTeamAdmin } from "@/server/auth/current-user";
 
 const dateFormat = new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" });
@@ -12,9 +14,10 @@ const inputDate = (date: Date | null) => date?.toISOString().slice(0, 10) ?? "";
 export default async function AdminProjectDetailPage({ params }: { params: Promise<{ projectId: string }> }) {
   await requireTeamAdmin();
   const { projectId } = await params;
-  const [project, memberCandidates] = await Promise.all([
+  const [project, memberCandidates, technologyCandidates] = await Promise.all([
     getAdminProjectById(projectId),
     getProjectMemberCandidates(),
+    getAdminTechnologies(),
   ]);
   if (!project) notFound();
 
@@ -25,6 +28,11 @@ export default async function AdminProjectDetailPage({ params }: { params: Promi
       <section className="mt-8 grid gap-3 sm:grid-cols-3" aria-label="Project relationships"><div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4"><p className="text-xs text-white/40">Assigned members</p><p className="mt-1 text-xl font-bold">{project._count.members}</p></div><div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4"><p className="text-xs text-white/40">Technologies</p><p className="mt-1 text-xl font-bold">{project._count.technologies}</p></div><div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4"><p className="text-xs text-white/40">Gallery images</p><p className="mt-1 text-xl font-bold">{project._count.images}</p></div></section>
       <div className="mt-8"><ProjectForm project={{ id: project.id, title: project.title, slug: project.slug, shortDescription: project.shortDescription, description: project.description, thumbnailUrl: project.thumbnailUrl, githubUrl: project.githubUrl, liveUrl: project.liveUrl, status: project.status, startDate: inputDate(project.startDate), endDate: inputDate(project.endDate), isFeatured: project.isFeatured, isPublished: project.isPublished, sortOrder: project.sortOrder }} /></div>
       <ProjectMembersManager assignments={project.members} candidates={memberCandidates} projectId={project.id} />
+      <ProjectTechnologiesManager
+        assigned={project.technologies.map(({ technology }) => technology)}
+        projectId={project.id}
+        technologies={technologyCandidates.map(({ id, name, category }) => ({ id, name, category }))}
+      />
       <DeleteProjectForm projectId={project.id} slug={project.slug} />
     </div>
   );
