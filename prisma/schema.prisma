@@ -1,0 +1,421 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  TEAM_ADMIN
+  MEMBER
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum ContactMessageStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?   @db.VarChar(160)
+  email         String    @unique @db.VarChar(320)
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(MEMBER)
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  member    Member?
+  accounts  Account[]
+  sessions  Session[]
+  media     Media[]
+  auditLogs AuditLog[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expires])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@index([expires])
+}
+
+model Member {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  slug            String   @unique @db.VarChar(120)
+  fullName        String   @db.VarChar(160)
+  headline        String?  @db.VarChar(240)
+  bio             String?  @db.Text
+  profileImageUrl String?
+  location        String?  @db.VarChar(160)
+  phone           String?  @db.VarChar(40)
+  publicEmail     String?  @db.VarChar(320)
+  isPublished     Boolean  @default(false)
+  teamOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  education          Education[]
+  experience         Experience[]
+  skills             MemberSkill[]
+  certifications     Certification[]
+  achievements       Achievement[]
+  socialLinks        SocialLink[]
+  personalProjects   PersonalProject[]
+  projectMemberships ProjectMember[]
+  contactMessages    ContactMessage[]
+
+  @@index([isPublished, teamOrder])
+}
+
+model Education {
+  id           String    @id @default(cuid())
+  memberId     String
+  institution  String    @db.VarChar(200)
+  degree       String    @db.VarChar(160)
+  fieldOfStudy String    @db.VarChar(160)
+  description  String?   @db.Text
+  startDate    DateTime  @db.Date
+  endDate      DateTime? @db.Date
+  isCurrent    Boolean   @default(false)
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, sortOrder])
+}
+
+model Experience {
+  id          String    @id @default(cuid())
+  memberId    String
+  company     String    @db.VarChar(200)
+  position    String    @db.VarChar(160)
+  description String?   @db.Text
+  startDate   DateTime  @db.Date
+  endDate     DateTime? @db.Date
+  isCurrent   Boolean   @default(false)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, sortOrder])
+}
+
+model Skill {
+  id        String   @id @default(cuid())
+  name      String   @unique @db.VarChar(120)
+  category  String?  @db.VarChar(120)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members MemberSkill[]
+
+  @@index([category])
+}
+
+model MemberSkill {
+  memberId    String
+  skillId     String
+  proficiency Int?
+  sortOrder   Int    @default(0)
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  skill  Skill  @relation(fields: [skillId], references: [id], onDelete: Restrict)
+
+  @@id([memberId, skillId])
+  @@index([memberId, sortOrder])
+  @@index([skillId])
+}
+
+model Certification {
+  id             String    @id @default(cuid())
+  memberId       String
+  name           String    @db.VarChar(200)
+  issuer         String    @db.VarChar(200)
+  description    String?   @db.Text
+  issueDate      DateTime  @db.Date
+  expirationDate DateTime? @db.Date
+  credentialUrl  String?
+  sortOrder      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, sortOrder])
+}
+
+model Achievement {
+  id          String    @id @default(cuid())
+  memberId    String
+  title       String    @db.VarChar(200)
+  description String    @db.Text
+  issuer      String?   @db.VarChar(200)
+  date        DateTime? @db.Date
+  url         String?
+  imageUrl    String?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, sortOrder])
+}
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  memberId  String
+  platform  String   @db.VarChar(80)
+  url       String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId, sortOrder])
+}
+
+model PersonalProject {
+  id               String    @id @default(cuid())
+  memberId         String
+  title            String    @db.VarChar(200)
+  slug             String    @db.VarChar(120)
+  shortDescription String?   @db.VarChar(320)
+  description      String?   @db.Text
+  thumbnailUrl     String?
+  githubUrl        String?
+  liveUrl          String?
+  startDate        DateTime? @db.Date
+  endDate          DateTime? @db.Date
+  isFeatured       Boolean   @default(false)
+  isPublished      Boolean   @default(false)
+  sortOrder        Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, slug])
+  @@index([memberId, isPublished, sortOrder])
+  @@index([slug])
+}
+
+model Team {
+  id               String   @id @default(cuid())
+  name             String   @db.VarChar(160)
+  slug             String   @unique @db.VarChar(120)
+  logoUrl          String?
+  description      String?  @db.Text
+  shortDescription String?  @db.VarChar(320)
+  contactEmail     String?  @db.VarChar(320)
+  location         String?  @db.VarChar(160)
+  githubUrl        String?
+  linkedinUrl      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Project {
+  id               String        @id @default(cuid())
+  title            String        @db.VarChar(200)
+  slug             String        @unique @db.VarChar(120)
+  shortDescription String?       @db.VarChar(320)
+  description      String?       @db.Text
+  thumbnailUrl     String?
+  githubUrl        String?
+  liveUrl          String?
+  status           ProjectStatus @default(PLANNING)
+  startDate        DateTime?     @db.Date
+  endDate          DateTime?     @db.Date
+  isFeatured       Boolean       @default(false)
+  isPublished      Boolean       @default(false)
+  sortOrder        Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  members      ProjectMember[]
+  technologies ProjectTechnology[]
+  images       ProjectImage[]
+
+  @@index([isPublished, isFeatured, sortOrder])
+  @@index([status])
+}
+
+model ProjectMember {
+  projectId    String
+  memberId     String
+  role         String? @db.VarChar(160)
+  contribution String? @db.Text
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, memberId])
+  @@index([memberId])
+}
+
+model Technology {
+  id       String  @id @default(cuid())
+  name     String  @unique @db.VarChar(120)
+  iconUrl  String?
+  category String? @db.VarChar(120)
+
+  projects ProjectTechnology[]
+
+  @@index([category])
+}
+
+model ProjectTechnology {
+  projectId    String
+  technologyId String
+
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  technology Technology @relation(fields: [technologyId], references: [id], onDelete: Restrict)
+
+  @@id([projectId, technologyId])
+  @@index([technologyId])
+}
+
+model ProjectImage {
+  id        String   @id @default(cuid())
+  projectId String
+  url       String
+  altText   String   @db.VarChar(320)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, sortOrder])
+}
+
+model TeamAchievement {
+  id          String    @id @default(cuid())
+  title       String    @db.VarChar(200)
+  description String    @db.Text
+  issuer      String?   @db.VarChar(200)
+  date        DateTime? @db.Date
+  imageUrl    String?
+  url         String?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([sortOrder])
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(160)
+  role        String?  @db.VarChar(160)
+  company     String?  @db.VarChar(160)
+  content     String   @db.Text
+  avatarUrl   String?
+  isPublished Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+}
+
+model ContactMessage {
+  id        String               @id @default(cuid())
+  name      String               @db.VarChar(160)
+  email     String               @db.VarChar(320)
+  subject   String               @db.VarChar(240)
+  message   String               @db.Text
+  memberId  String?
+  status    ContactMessageStatus @default(UNREAD)
+  createdAt DateTime             @default(now())
+
+  member Member? @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  @@index([memberId])
+  @@index([status, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String   @db.VarChar(120)
+  entityType String   @db.VarChar(120)
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Media {
+  id               String   @id @default(cuid())
+  uploadedByUserId String?
+  url              String
+  storageKey       String   @unique
+  filename         String   @db.VarChar(255)
+  mimeType         String   @db.VarChar(160)
+  size             Int
+  createdAt        DateTime @default(now())
+
+  uploadedBy User? @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([uploadedByUserId])
+}
