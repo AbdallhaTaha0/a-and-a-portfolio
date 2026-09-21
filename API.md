@@ -79,6 +79,11 @@ dictionary records plus assignment/removal on a Project. A Technology still refe
 by any project cannot be deleted. Relationship mutations re-read the Project and
 Technology and audit the composite key.
 
+TeamAchievement administration allowlists content, optional issuer/date, secure URLs,
+and display order. Update and delete operations re-read the target; deletion requires
+the current title as explicit confirmation. These team-level records are never editable
+through MEMBER-owned Achievement operations.
+
 In the current server-action implementation, deleting `/admin/members/:id` means deleting
 the Member profile and its owned content after exact-slug confirmation. It does not delete
 the owning User. Active MEMBER accounts must be deactivated through the separate account

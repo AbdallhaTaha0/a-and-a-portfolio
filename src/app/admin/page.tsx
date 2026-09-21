@@ -39,6 +39,9 @@ export default async function AdminPage() {
           <p className="mt-2 text-sm leading-6 text-white/50">Reusable stack dictionary and project assignments</p>
           <p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Manage technologies →</p>
         </Link>
+        <Link className="rounded-3xl border border-[#ffb800]/25 bg-[#ffb800]/5 p-6 transition hover:border-[#ffb800]/55 hover:bg-[#ffb800]/10" href="/admin/achievements">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Achievements</h2><p className="mt-2 text-sm leading-6 text-white/50">Team recognition and editorial ordering</p><p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Manage achievements →</p>
+        </Link>
       </section>
 
       {!user.member ? (

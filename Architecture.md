@@ -221,6 +221,12 @@ confirmation and is rejected while any ProjectTechnology relation exists, preser
 restrictive shared-dictionary semantics in the database. Assignment and removal re-read
 both sides of the relationship, are audited, and do not change project ownership.
 
+`/admin/achievements` provides ordered TeamAchievement CRUD. These records are
+team-controlled and remain separate from member-owned Achievement content. Administrators
+may manage titles, descriptions, issuer/date metadata, secure reference and image URLs,
+and editorial order. Updates and exact-title confirmed deletes re-read the target inside
+the audited transaction and revalidate the dashboard and landing page.
+
 ## Rendering
 
 Public content should favor server rendering/caching where practical.

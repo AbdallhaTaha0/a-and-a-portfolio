@@ -160,7 +160,7 @@ Tasks:
 - [x] Project CRUD
 - [x] Project-member assignment
 - [x] Technology management
-- [ ] Achievements
+- [x] Achievements
 - [ ] Testimonials if enabled
 - [ ] Contact messages
 - [ ] Audit log view

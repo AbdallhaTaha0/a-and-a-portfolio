@@ -1,0 +1,5 @@
+import Link from "next/link";
+import { TeamAchievementManager } from "@/features/achievements/team-achievement-manager";
+import { getAdminTeamAchievements } from "@/server/admin/achievements";
+import { requireTeamAdmin } from "@/server/auth/current-user";
+export default async function TeamAchievementsPage() { await requireTeamAdmin(); const records = await getAdminTeamAchievements(); const achievements = records.map((record) => ({ ...record, date: record.date?.toISOString().slice(0, 10) ?? "" })); return <div><Link className="text-sm font-semibold text-white/45 hover:text-white" href="/admin">← Team dashboard</Link><p className="mt-8 text-xs font-bold tracking-[0.16em] text-[#ffc83d] uppercase">Team administration</p><h1 className="mt-3 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-0.04em] sm:text-5xl">Achievements</h1><p className="mt-3 max-w-3xl leading-7 text-white/55">Maintain ordered team-level achievements. Member-owned achievements remain separate.</p><TeamAchievementManager achievements={achievements} /></div>; }
