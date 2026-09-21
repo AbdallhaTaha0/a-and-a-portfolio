@@ -208,7 +208,11 @@ status, featured/publication state, and editorial order, and explicitly confirm 
 with the current slug. Mutations re-read existing targets inside the transaction, audit
 the change atomically, and revalidate the project administration routes plus affected
 public list, detail, and landing-page paths. Contributor assignment, technology
-management, and gallery/media workflows remain separate milestones.
+management, and gallery/media workflows remain separate concerns. Contributor
+assignment is implemented on the project detail editor: administrators may add a Member,
+edit their project role and contribution, or explicitly remove the relationship. The
+server re-reads both referenced records, never treats participation as ownership, audits
+every relationship change, and revalidates the affected administrative and public paths.
 
 ## Rendering
 

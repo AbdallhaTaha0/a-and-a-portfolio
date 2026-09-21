@@ -21,6 +21,20 @@ export async function getAdminProjects() {
   });
 }
 
+export async function getProjectMemberCandidates() {
+  return prisma.member.findMany({
+    orderBy: [{ teamOrder: "asc" }, { fullName: "asc" }],
+    take: 100,
+    select: {
+      id: true,
+      fullName: true,
+      slug: true,
+      isPublished: true,
+      user: { select: { isActive: true } },
+    },
+  });
+}
+
 export async function getAdminProjectById(projectId: string) {
   return prisma.project.findUnique({
     where: { id: projectId },
@@ -41,6 +55,22 @@ export async function getAdminProjectById(projectId: string) {
       sortOrder: true,
       createdAt: true,
       updatedAt: true,
+      members: {
+        orderBy: { member: { teamOrder: "asc" } },
+        select: {
+          role: true,
+          contribution: true,
+          member: {
+            select: {
+              id: true,
+              slug: true,
+              fullName: true,
+              isPublished: true,
+              user: { select: { isActive: true } },
+            },
+          },
+        },
+      },
       _count: { select: { members: true, technologies: true, images: true } },
     },
   });

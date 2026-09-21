@@ -68,6 +68,12 @@ the current project slug as explicit confirmation, cascades only the relationshi
 by the Project according to `Schema.md`, appends an AuditLog record, and preserves prior
 audit history.
 
+Project-member assignment accepts only a project ID, Member ID, optional role, and
+optional contribution. The server re-reads both records before upserting the composite
+`projectId + memberId` relationship. Removing an assignment re-reads that exact
+relationship and requires explicit UI confirmation. Assignment does not grant project
+edit permission.
+
 In the current server-action implementation, deleting `/admin/members/:id` means deleting
 the Member profile and its owned content after exact-slug confirmation. It does not delete
 the owning User. Active MEMBER accounts must be deactivated through the separate account

@@ -241,6 +241,11 @@ The following are team-controlled and cannot be modified by a MEMBER:
 
 Project participation is not ownership. Being listed in `ProjectMember` does not grant a MEMBER permission to edit the team Project.
 
+Only TEAM_ADMIN may create, update, or remove ProjectMember relationships. Assignment
+mutations must re-read both the Project and Member from the database, allowlist only role
+and contribution metadata, and audit the composite relationship. A Member's assignment
+never expands their authorization beyond their existing personal-profile ownership.
+
 ### Mass-assignment protection
 
 Use explicit allowlists when creating Prisma `data` objects. Never spread a raw request body into a Prisma create or update call.

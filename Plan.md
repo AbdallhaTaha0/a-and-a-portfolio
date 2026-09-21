@@ -158,7 +158,7 @@ Tasks:
 - [x] Allow an administrator to create or link their own Member profile
 - [x] Preserve Member profile and content across promotion or demotion
 - [x] Project CRUD
-- [ ] Project-member assignment
+- [x] Project-member assignment
 - [ ] Technology management
 - [ ] Achievements
 - [ ] Testimonials if enabled

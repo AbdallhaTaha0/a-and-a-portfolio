@@ -53,6 +53,7 @@ Cover critical user journeys.
 25. Removing the final active TEAM_ADMIN's optional Member profile does not delete or deactivate that administrator account.
 26. TEAM_ADMIN can create, edit, order, feature, publish, unpublish, and delete team projects while MEMBER and unauthenticated callers are rejected.
 27. Project publication rejects incomplete records and invalid date ranges, and project deletion requires the current trusted slug.
+28. TEAM_ADMIN can assign, edit, and remove project members only after both referenced records are re-read; relationship fields cannot alter ownership or publication.
 
 ## Public-page tests
 
