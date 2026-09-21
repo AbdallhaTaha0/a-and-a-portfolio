@@ -45,6 +45,9 @@ export default async function AdminPage() {
         <Link className="rounded-3xl border border-[#ffb800]/25 bg-[#ffb800]/5 p-6 transition hover:border-[#ffb800]/55 hover:bg-[#ffb800]/10" href="/admin/testimonials">
           <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Testimonials</h2><p className="mt-2 text-sm leading-6 text-white/50">Drafts, publication, and editorial ordering</p><p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Manage testimonials →</p>
         </Link>
+        <Link className="rounded-3xl border border-[#ffb800]/25 bg-[#ffb800]/5 p-6 transition hover:border-[#ffb800]/55 hover:bg-[#ffb800]/10" href="/admin/messages">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Messages</h2><p className="mt-2 text-sm leading-6 text-white/50">Private contact submissions and follow-up status</p><p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Review messages →</p>
+        </Link>
       </section>
 
       {!user.member ? (

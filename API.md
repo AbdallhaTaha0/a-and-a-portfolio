@@ -88,6 +88,11 @@ Testimonial administration supports draft creation, complete editing, publicatio
 ordering, and exact-name confirmed deletion. Only TEAM_ADMIN may mutate testimonials;
 public reads must continue to select only published records and public fields.
 
+ContactMessage administration provides protected reads and allowlisted status changes
+between UNREAD, READ, and ARCHIVED. Only TEAM_ADMIN may read message bodies or change
+status. Audit metadata records status transitions but never copies contact details or
+message content.
+
 In the current server-action implementation, deleting `/admin/members/:id` means deleting
 the Member profile and its owned content after exact-slug confirmation. It does not delete
 the owning User. Active MEMBER accounts must be deactivated through the separate account

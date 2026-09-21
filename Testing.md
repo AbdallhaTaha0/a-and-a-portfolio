@@ -57,6 +57,7 @@ Cover critical user journeys.
 29. TEAM_ADMIN can manage the Technology dictionary and project assignments; in-use technologies cannot be deleted and relationship input cannot alter either referenced record.
 30. TEAM_ADMIN can create, edit, order, and explicitly delete TeamAchievement records while MEMBER and unauthenticated callers are rejected.
 31. TEAM_ADMIN can create, edit, publish, unpublish, order, and explicitly delete testimonials; public reads exclude drafts.
+32. Only TEAM_ADMIN can read contact messages or change their status, and audit/log output excludes message bodies and contact details.
 
 ## Public-page tests
 

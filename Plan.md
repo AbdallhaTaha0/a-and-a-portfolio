@@ -162,7 +162,7 @@ Tasks:
 - [x] Technology management
 - [x] Achievements
 - [x] Testimonials
-- [ ] Contact messages
+- [x] Contact messages
 - [ ] Audit log view
 - [ ] Preview
 - [ ] Publication controls

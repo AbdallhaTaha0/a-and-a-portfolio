@@ -392,6 +392,11 @@ Contact form input is untrusted and must be length-limited, validated, escaped o
 
 Team-directed messages (`memberId = null`) are visible only to TEAM_ADMIN. If member-directed contact is implemented, the authorization policy must be documented before exposing messages to a MEMBER. Until then, MEMBER accounts must not read ContactMessage records.
 
+The implemented administrator inbox is protected by fresh TEAM_ADMIN authorization.
+Status actions accept only a message ID and documented status enum, re-read the target,
+and audit only the previous and next status. Message bodies, sender email addresses, and
+other contact details are not written to audit or operational logs.
+
 Do not place contact-message bodies in routine logs, analytics, notification subjects, or URLs. Email notifications must escape untrusted content and link back to an authenticated dashboard rather than containing unnecessary private content.
 
 ## Database and Prisma

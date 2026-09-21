@@ -232,6 +232,12 @@ Administrators manage attribution, content, optional secure avatar URLs, and pub
 state. Updates and exact-name confirmed deletes re-read the target, audit atomically, and
 revalidate the landing page so unpublished content remains outside public queries.
 
+`/admin/messages` is a TEAM_ADMIN-only inbox for the latest contact submissions. It
+selects message content only for the protected server-rendered view and supports
+UNREAD/READ/ARCHIVED status transitions. Status mutations re-read the message and audit
+only IDs and status metadata; private message bodies and contact details are never copied
+into audit or operational logs.
+
 ## Rendering
 
 Public content should favor server rendering/caching where practical.
