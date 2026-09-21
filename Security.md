@@ -465,6 +465,10 @@ Create AuditLog records for:
 - destructive administrative actions
 - important authentication, upload, and integration security events
 
+The implemented audit view is restricted to active TEAM_ADMIN accounts and is read-only.
+It shows the latest 100 records and renders only scalar metadata values; MEMBER and public
+routes have no audit-log query or UI.
+
 Audit metadata must not contain secrets. MEMBER accounts cannot edit or delete audit records.
 
 User-facing errors must be actionable but must not reveal stack traces, SQL errors, storage keys, provider responses, or resource existence across an authorization boundary. Unexpected errors should receive a safe internal reference ID that can be matched to restricted server logs.

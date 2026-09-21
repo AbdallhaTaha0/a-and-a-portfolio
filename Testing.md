@@ -58,6 +58,7 @@ Cover critical user journeys.
 30. TEAM_ADMIN can create, edit, order, and explicitly delete TeamAchievement records while MEMBER and unauthenticated callers are rejected.
 31. TEAM_ADMIN can create, edit, publish, unpublish, order, and explicitly delete testimonials; public reads exclude drafts.
 32. Only TEAM_ADMIN can read contact messages or change their status, and audit/log output excludes message bodies and contact details.
+33. Only TEAM_ADMIN can view the read-only audit history, and metadata rendering ignores nested values that could contain unexpected private structures.
 
 ## Public-page tests
 

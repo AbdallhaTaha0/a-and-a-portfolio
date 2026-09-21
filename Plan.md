@@ -163,7 +163,7 @@ Tasks:
 - [x] Achievements
 - [x] Testimonials
 - [x] Contact messages
-- [ ] Audit log view
+- [x] Audit log view
 - [ ] Preview
 - [ ] Publication controls
 

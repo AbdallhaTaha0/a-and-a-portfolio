@@ -238,6 +238,11 @@ UNREAD/READ/ARCHIVED status transitions. Status mutations re-read the message an
 only IDs and status metadata; private message bodies and contact details are never copied
 into audit or operational logs.
 
+`/admin/audit` is a read-only TEAM_ADMIN view of the latest 100 AuditLog records. It
+selects only actor identity, action/entity references, timestamps, and recorded metadata.
+The UI displays only scalar metadata values in a stable order and exposes no mutation or
+deletion action.
+
 ## Rendering
 
 Public content should favor server rendering/caching where practical.
