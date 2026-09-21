@@ -147,7 +147,9 @@ Every published member has a complete public portfolio.
 Tasks:
 - [x] Dashboard overview
 - [x] Team content editor
-- [ ] Member CRUD
+- [x] Member CRUD
+- [x] Complete administrator Member editor with ordering and publication controls
+- [x] Explicitly confirmed Member-profile deletion that retains the User and audit history
 - [x] Member account management
 - [x] Create/invite additional TEAM_ADMIN accounts
 - [x] Promote, demote, activate, and deactivate administrators with audit logging
@@ -155,15 +157,15 @@ Tasks:
 - [ ] Prevent removal of the final active TEAM_ADMIN when account deletion is implemented
 - [x] Allow an administrator to create or link their own Member profile
 - [x] Preserve Member profile and content across promotion or demotion
-- [ ] Project CRUD
-- [ ] Project-member assignment
-- [ ] Technology management
-- [ ] Achievements
-- [ ] Testimonials if enabled
-- [ ] Contact messages
-- [ ] Audit log view
+- [x] Project CRUD
+- [x] Project-member assignment
+- [x] Technology management
+- [x] Achievements
+- [x] Testimonials
+- [x] Contact messages
+- [x] Audit log view
 - [ ] Preview
-- [ ] Publication controls
+- [x] Publication controls for Member profiles, team Projects, and Testimonials
 
 Deliverable:
 Multiple Team Admins can operate the platform without editing code.

@@ -31,53 +31,60 @@ const optionalHttpsUrl = z.preprocess(
     .optional(),
 );
 
-export const memberProfileSchema = z
-  .object({
-    fullName: z
+export const memberProfileInputShape = {
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Enter at least 2 characters.")
+    .max(160, "Use 160 characters or fewer."),
+  headline: optionalText(240),
+  bio: optionalText(4_000),
+  location: optionalText(160),
+  publicEmail: z.preprocess(
+    (value) =>
+      value == null || (typeof value === "string" && value.trim() === "")
+        ? undefined
+        : value,
+    z
       .string()
       .trim()
-      .min(2, "Enter at least 2 characters.")
-      .max(160, "Use 160 characters or fewer."),
-    headline: optionalText(240),
-    bio: optionalText(4_000),
-    location: optionalText(160),
-    publicEmail: z.preprocess(
-      (value) =>
-        value == null || (typeof value === "string" && value.trim() === "")
-          ? undefined
-          : value,
-      z
-        .string()
-        .trim()
-        .email("Enter a valid email address.")
-        .max(320)
-        .optional(),
-    ),
-    phone: optionalText(40),
-    profileImageUrl: optionalHttpsUrl,
-    isPublished: z.boolean(),
-  })
-  .superRefine((profile, context) => {
-    if (!profile.isPublished) {
-      return;
-    }
+      .email("Enter a valid email address.")
+      .max(320)
+      .optional(),
+  ),
+  phone: optionalText(40),
+  profileImageUrl: optionalHttpsUrl,
+  isPublished: z.boolean(),
+} satisfies z.ZodRawShape;
 
-    if (!profile.headline) {
-      context.addIssue({
-        code: "custom",
-        message: "Add a headline before publishing.",
-        path: ["headline"],
-      });
-    }
+export function validateMemberPublication(
+  profile: { isPublished: boolean; headline?: string; bio?: string },
+  context: z.RefinementCtx,
+) {
+  if (!profile.isPublished) {
+    return;
+  }
 
-    if (!profile.bio) {
-      context.addIssue({
-        code: "custom",
-        message: "Add a biography before publishing.",
-        path: ["bio"],
-      });
-    }
-  });
+  if (!profile.headline) {
+    context.addIssue({
+      code: "custom",
+      message: "Add a headline before publishing.",
+      path: ["headline"],
+    });
+  }
+
+  if (!profile.bio) {
+    context.addIssue({
+      code: "custom",
+      message: "Add a biography before publishing.",
+      path: ["bio"],
+    });
+  }
+}
+
+export const memberProfileSchema = z
+  .object(memberProfileInputShape)
+  .superRefine(validateMemberPublication);
 
 export type MemberProfileInput = z.infer<typeof memberProfileSchema>;
 

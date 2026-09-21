@@ -52,6 +52,8 @@ PATCH  /api/admin/members/:id
 DELETE /api/admin/members/:id
 
 POST   /api/admin/projects
+GET    /api/admin/projects
+GET    /api/admin/projects/:id
 PATCH  /api/admin/projects/:id
 DELETE /api/admin/projects/:id
 
@@ -59,6 +61,43 @@ PATCH  /api/admin/team
 ```
 
 Only TEAM_ADMIN can perform these.
+
+Project mutations use allowlisted fields and server-side publication/date validation.
+Updates and deletes re-read the target by ID inside the transaction. Deletion requires
+the current project slug as explicit confirmation, cascades only the relationships owned
+by the Project according to `Schema.md`, appends an AuditLog record, and preserves prior
+audit history.
+
+Project-member assignment accepts only a project ID, Member ID, optional role, and
+optional contribution. The server re-reads both records before upserting the composite
+`projectId + memberId` relationship. Removing an assignment re-reads that exact
+relationship and requires explicit UI confirmation. Assignment does not grant project
+edit permission.
+
+Technology administration supports create, update, and confirmed deletion of reusable
+dictionary records plus assignment/removal on a Project. A Technology still referenced
+by any project cannot be deleted. Relationship mutations re-read the Project and
+Technology and audit the composite key.
+
+TeamAchievement administration allowlists content, optional issuer/date, secure URLs,
+and display order. Update and delete operations re-read the target; deletion requires
+the current title as explicit confirmation. These team-level records are never editable
+through MEMBER-owned Achievement operations.
+
+Testimonial administration supports draft creation, complete editing, publication state,
+ordering, and exact-name confirmed deletion. Only TEAM_ADMIN may mutate testimonials;
+public reads must continue to select only published records and public fields.
+
+ContactMessage administration provides protected reads and allowlisted status changes
+between UNREAD, READ, and ARCHIVED. Only TEAM_ADMIN may read message bodies or change
+status. Audit metadata records status transitions but never copies contact details or
+message content.
+
+In the current server-action implementation, deleting `/admin/members/:id` means deleting
+the Member profile and its owned content after exact-slug confirmation. It does not delete
+the owning User. Active MEMBER accounts must be deactivated through the separate account
+status operation first; TEAM_ADMIN accounts retain their role and access when an optional
+profile is removed. The destructive transaction retains and appends audit history.
 
 ## Member operations
 

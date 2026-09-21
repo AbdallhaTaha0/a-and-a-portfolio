@@ -48,6 +48,17 @@ Cover critical user journeys.
 20. Demoting a TEAM_ADMIN with a Member profile removes team access but preserves their personal dashboard and content.
 21. Active MEMBER without a Member relation receives a safe setup error and no privileged access.
 22. An already authenticated user visiting `/login` is redirected to the dashboard allowed by their current role and Member relation.
+23. Administrator Member edits re-read the target, reject injected ownership/account fields, and revalidate old and new public slugs.
+24. Member-profile deletion requires exact confirmation, preserves the User and audit history, and cannot create an active MEMBER without a profile.
+25. Removing the final active TEAM_ADMIN's optional Member profile does not delete or deactivate that administrator account.
+26. TEAM_ADMIN can create, edit, order, feature, publish, unpublish, and delete team projects while MEMBER and unauthenticated callers are rejected.
+27. Project publication rejects incomplete records and invalid date ranges, and project deletion requires the current trusted slug.
+28. TEAM_ADMIN can assign, edit, and remove project members only after both referenced records are re-read; relationship fields cannot alter ownership or publication.
+29. TEAM_ADMIN can manage the Technology dictionary and project assignments; in-use technologies cannot be deleted and relationship input cannot alter either referenced record.
+30. TEAM_ADMIN can create, edit, order, and explicitly delete TeamAchievement records while MEMBER and unauthenticated callers are rejected.
+31. TEAM_ADMIN can create, edit, publish, unpublish, order, and explicitly delete testimonials; public reads exclude drafts.
+32. Only TEAM_ADMIN can read contact messages or change their status, and audit/log output excludes message bodies and contact details.
+33. Only TEAM_ADMIN can view the read-only audit history, and metadata rendering ignores nested values that could contain unexpected private structures.
 
 ## Public-page tests
 

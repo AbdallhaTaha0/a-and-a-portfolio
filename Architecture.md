@@ -183,6 +183,17 @@ audited. A serializable transaction prevents concurrent changes from removing th
 active TEAM_ADMIN. Demotion never removes a Member profile or its owned content, and an
 administrator without a Member profile cannot be demoted to an active MEMBER state.
 
+The same protected area lists Member profiles in `teamOrder` and links to
+`/admin/members/[memberId]`, where a TEAM_ADMIN can view and edit the complete Member
+record, including publication state and editorial position. Updates re-read the target
+inside the transaction, use an explicit field allowlist, audit the change, and revalidate
+the public member list plus the old and new slug routes. Profile deletion requires the
+current slug as explicit confirmation. It deletes only the Member and its owned child
+content; the User account and AuditLog history remain. An active MEMBER account must be
+deactivated before its required profile can be deleted. A TEAM_ADMIN profile remains an
+optional capability, so deleting that profile never deletes or deactivates the
+administrator account, including the final active administrator.
+
 `/admin/team` is the protected editor for the single logical Team record identified by
 the stable `a-and-a` slug. The server action re-authorizes TEAM_ADMIN access, allowlists
 and validates editable fields, updates or creates that record atomically with an audit
@@ -190,6 +201,47 @@ log, and revalidates both the editor and public home page. The public home page 
 only the Team identity, description, contact, location, and social-link fields it renders;
 it does not expose administrative or audit data. Optional empty fields are omitted from
 the public interface.
+
+`/admin/projects` and `/admin/projects/[projectId]` provide TEAM_ADMIN Project CRUD.
+Administrators can create drafts, edit the complete Project record, control project
+status, featured/publication state, and editorial order, and explicitly confirm deletion
+with the current slug. Mutations re-read existing targets inside the transaction, audit
+the change atomically, and revalidate the project administration routes plus affected
+public list, detail, and landing-page paths. Contributor assignment, technology
+management, and gallery/media workflows remain separate concerns. Contributor
+assignment is implemented on the project detail editor: administrators may add a Member,
+edit their project role and contribution, or explicitly remove the relationship. The
+server re-reads both referenced records, never treats participation as ownership, audits
+every relationship change, and revalidates the affected administrative and public paths.
+
+`/admin/technologies` manages the reusable Technology dictionary, while project detail
+editors manage ProjectTechnology assignments. Technology creation and editing allowlist
+name, category, and an optional secure icon URL. Deletion requires exact-name
+confirmation and is rejected while any ProjectTechnology relation exists, preserving the
+restrictive shared-dictionary semantics in the database. Assignment and removal re-read
+both sides of the relationship, are audited, and do not change project ownership.
+
+`/admin/achievements` provides ordered TeamAchievement CRUD. These records are
+team-controlled and remain separate from member-owned Achievement content. Administrators
+may manage titles, descriptions, issuer/date metadata, secure reference and image URLs,
+and editorial order. Updates and exact-title confirmed deletes re-read the target inside
+the audited transaction and revalidate the dashboard and landing page.
+
+`/admin/testimonials` provides draft/published Testimonial CRUD with editorial ordering.
+Administrators manage attribution, content, optional secure avatar URLs, and publication
+state. Updates and exact-name confirmed deletes re-read the target, audit atomically, and
+revalidate the landing page so unpublished content remains outside public queries.
+
+`/admin/messages` is a TEAM_ADMIN-only inbox for the latest contact submissions. It
+selects message content only for the protected server-rendered view and supports
+UNREAD/READ/ARCHIVED status transitions. Status mutations re-read the message and audit
+only IDs and status metadata; private message bodies and contact details are never copied
+into audit or operational logs.
+
+`/admin/audit` is a read-only TEAM_ADMIN view of the latest 100 AuditLog records. It
+selects only actor identity, action/entity references, timestamps, and recorded metadata.
+The UI displays only scalar metadata values in a stable order and exposes no mutation or
+deletion action.
 
 ## Rendering
 

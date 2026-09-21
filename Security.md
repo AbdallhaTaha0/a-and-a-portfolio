@@ -241,6 +241,16 @@ The following are team-controlled and cannot be modified by a MEMBER:
 
 Project participation is not ownership. Being listed in `ProjectMember` does not grant a MEMBER permission to edit the team Project.
 
+Only TEAM_ADMIN may create, update, or remove ProjectMember relationships. Assignment
+mutations must re-read both the Project and Member from the database, allowlist only role
+and contribution metadata, and audit the composite relationship. A Member's assignment
+never expands their authorization beyond their existing personal-profile ownership.
+
+Only TEAM_ADMIN may manage Technology or ProjectTechnology records. Shared technologies
+use restrictive deletion: the server re-reads the Technology and its project-reference
+count and refuses deletion while it is in use. Project-technology mutations re-read both
+referenced records and cannot modify Project publication, ownership, or Member data.
+
 ### Mass-assignment protection
 
 Use explicit allowlists when creating Prisma `data` objects. Never spread a raw request body into a Prisma create or update call.
@@ -382,6 +392,11 @@ Contact form input is untrusted and must be length-limited, validated, escaped o
 
 Team-directed messages (`memberId = null`) are visible only to TEAM_ADMIN. If member-directed contact is implemented, the authorization policy must be documented before exposing messages to a MEMBER. Until then, MEMBER accounts must not read ContactMessage records.
 
+The implemented administrator inbox is protected by fresh TEAM_ADMIN authorization.
+Status actions accept only a message ID and documented status enum, re-read the target,
+and audit only the previous and next status. Message bodies, sender email addresses, and
+other contact details are not written to audit or operational logs.
+
 Do not place contact-message bodies in routine logs, analytics, notification subjects, or URLs. Email notifications must escape untrusted content and link back to an authenticated dashboard rather than containing unnecessary private content.
 
 ## Database and Prisma
@@ -450,6 +465,10 @@ Create AuditLog records for:
 - destructive administrative actions
 - important authentication, upload, and integration security events
 
+The implemented audit view is restricted to active TEAM_ADMIN accounts and is read-only.
+It shows the latest 100 records and renders only scalar metadata values; MEMBER and public
+routes have no audit-log query or UI.
+
 Audit metadata must not contain secrets. MEMBER accounts cannot edit or delete audit records.
 
 User-facing errors must be actionable but must not reveal stack traces, SQL errors, storage keys, provider responses, or resource existence across an authorization boundary. Unexpected errors should receive a safe internal reference ID that can be matched to restricted server logs.
@@ -461,6 +480,13 @@ Deleting or deactivating a member, deleting a project, removing media, and other
 The confirmation UI is a safety control, not authorization. The server must repeat authentication, role, ownership, and validation checks when the confirmed request is submitted.
 
 Before deleting a member or project, resolve affected relations and media. Do not silently delete shared Skill or Technology records. Preserve AuditLog records according to retention policy.
+
+Administrator Member deletion means profile deletion, not User-account deletion. The
+server requires the current public slug as confirmation, re-reads the Member and owning
+User inside the transaction, and deletes only the Member after authorization. An active
+MEMBER must first be deactivated through the separate account-status action. The User,
+provider identities, and AuditLog history remain, and deleting an optional TEAM_ADMIN
+profile must never remove or deactivate that administrator.
 
 ## Dependency, CI, and deployment security
 

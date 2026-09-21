@@ -120,6 +120,11 @@ professional headline, and biography. Location, public contact email, and portra
 optional. A member may save an incomplete draft at any time. The stable member slug is
 not automatically changed when the display name changes.
 
+For the initial team-project workflow, publication requires a title, short description,
+full description, and secure HTTPS thumbnail URL. GitHub/live URLs and dates are optional.
+Drafts may remain incomplete, and the stable project slug changes only through an
+explicit administrator edit.
+
 ## Accessibility
 
 Images require meaningful alt text when informative.

@@ -29,11 +29,28 @@ export default async function AdminPage() {
           <p className="mt-2 text-sm leading-6 text-white/50">Accounts, profiles, access, and invitations</p>
           <p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Manage members →</p>
         </Link>
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+        <Link className="rounded-3xl border border-[#ffb800]/25 bg-[#ffb800]/5 p-6 transition hover:border-[#ffb800]/55 hover:bg-[#ffb800]/10" href="/admin/projects">
           <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Projects</h2>
           <p className="mt-2 text-sm leading-6 text-white/50">Team work, contributors, and publication</p>
-          <p className="mt-6 text-xs font-semibold tracking-[0.1em] text-white/30 uppercase">Editor coming next</p>
-        </div>
+          <p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Manage projects →</p>
+        </Link>
+        <Link className="rounded-3xl border border-[#ffb800]/25 bg-[#ffb800]/5 p-6 transition hover:border-[#ffb800]/55 hover:bg-[#ffb800]/10" href="/admin/technologies">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Technologies</h2>
+          <p className="mt-2 text-sm leading-6 text-white/50">Reusable stack dictionary and project assignments</p>
+          <p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Manage technologies →</p>
+        </Link>
+        <Link className="rounded-3xl border border-[#ffb800]/25 bg-[#ffb800]/5 p-6 transition hover:border-[#ffb800]/55 hover:bg-[#ffb800]/10" href="/admin/achievements">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Achievements</h2><p className="mt-2 text-sm leading-6 text-white/50">Team recognition and editorial ordering</p><p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Manage achievements →</p>
+        </Link>
+        <Link className="rounded-3xl border border-[#ffb800]/25 bg-[#ffb800]/5 p-6 transition hover:border-[#ffb800]/55 hover:bg-[#ffb800]/10" href="/admin/testimonials">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Testimonials</h2><p className="mt-2 text-sm leading-6 text-white/50">Drafts, publication, and editorial ordering</p><p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Manage testimonials →</p>
+        </Link>
+        <Link className="rounded-3xl border border-[#ffb800]/25 bg-[#ffb800]/5 p-6 transition hover:border-[#ffb800]/55 hover:bg-[#ffb800]/10" href="/admin/messages">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Messages</h2><p className="mt-2 text-sm leading-6 text-white/50">Private contact submissions and follow-up status</p><p className="mt-6 text-xs font-semibold tracking-[0.1em] text-[#ffc83d] uppercase">Review messages →</p>
+        </Link>
+        <Link className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-white/25" href="/admin/audit">
+          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold">Audit log</h2><p className="mt-2 text-sm leading-6 text-white/50">Read-only administrative and security history</p><p className="mt-6 text-xs font-semibold tracking-[0.1em] text-white/45 uppercase">Review audit log →</p>
+        </Link>
       </section>
 
       {!user.member ? (
