@@ -60,6 +60,12 @@ PATCH  /api/admin/team
 
 Only TEAM_ADMIN can perform these.
 
+In the current server-action implementation, deleting `/admin/members/:id` means deleting
+the Member profile and its owned content after exact-slug confirmation. It does not delete
+the owning User. Active MEMBER accounts must be deactivated through the separate account
+status operation first; TEAM_ADMIN accounts retain their role and access when an optional
+profile is removed. The destructive transaction retains and appends audit history.
+
 ## Member operations
 
 Conceptual operations:

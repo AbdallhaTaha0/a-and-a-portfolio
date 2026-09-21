@@ -462,6 +462,13 @@ The confirmation UI is a safety control, not authorization. The server must repe
 
 Before deleting a member or project, resolve affected relations and media. Do not silently delete shared Skill or Technology records. Preserve AuditLog records according to retention policy.
 
+Administrator Member deletion means profile deletion, not User-account deletion. The
+server requires the current public slug as confirmation, re-reads the Member and owning
+User inside the transaction, and deletes only the Member after authorization. An active
+MEMBER must first be deactivated through the separate account-status action. The User,
+provider identities, and AuditLog history remain, and deleting an optional TEAM_ADMIN
+profile must never remove or deactivate that administrator.
+
 ## Dependency, CI, and deployment security
 
 - commit and use the package-manager lockfile

@@ -85,3 +85,17 @@ Model real domain entities instead of creating a generic block-based CMS initial
 
 Reason:
 A generic page builder would add substantial complexity without being required by the current product.
+
+## ADR-011 — Member profile deletion is not account deletion
+
+Decision:
+Administrator Member CRUD deletes only the Member profile and its owned content. It
+retains the owning User, provider identities, and audit history. An active MEMBER account
+must be deactivated before its required profile can be deleted; a TEAM_ADMIN may retain
+administrator access without a profile.
+
+Reason:
+Role, account access, and public-profile ownership are separate capabilities. Keeping
+their destructive operations separate prevents an editorial action from unexpectedly
+removing login access or the final active administrator, while retaining the audit trail
+needed to explain the deletion.

@@ -183,6 +183,17 @@ audited. A serializable transaction prevents concurrent changes from removing th
 active TEAM_ADMIN. Demotion never removes a Member profile or its owned content, and an
 administrator without a Member profile cannot be demoted to an active MEMBER state.
 
+The same protected area lists Member profiles in `teamOrder` and links to
+`/admin/members/[memberId]`, where a TEAM_ADMIN can view and edit the complete Member
+record, including publication state and editorial position. Updates re-read the target
+inside the transaction, use an explicit field allowlist, audit the change, and revalidate
+the public member list plus the old and new slug routes. Profile deletion requires the
+current slug as explicit confirmation. It deletes only the Member and its owned child
+content; the User account and AuditLog history remain. An active MEMBER account must be
+deactivated before its required profile can be deleted. A TEAM_ADMIN profile remains an
+optional capability, so deleting that profile never deletes or deactivates the
+administrator account, including the final active administrator.
+
 `/admin/team` is the protected editor for the single logical Team record identified by
 the stable `a-and-a` slug. The server action re-authorizes TEAM_ADMIN access, allowlists
 and validates editable fields, updates or creates that record atomically with an audit

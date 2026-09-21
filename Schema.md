@@ -384,3 +384,11 @@ Default preference:
 - Do not physically delete audit records merely because the source entity was removed unless there is a deliberate retention policy.
 
 Before implementing deletion semantics, verify the exact Prisma relation configuration.
+
+The implemented administrator Member deletion flow deletes the `Member` record, not its
+owning `User`. Database cascades remove truly owned Member content and project-membership
+rows; nullable contact-message references are set to null. `AuditLog` records have no
+foreign-key dependency on `Member` and are retained. Active MEMBER accounts must be
+deactivated before profile deletion so the system never creates an active MEMBER without
+its required profile. TEAM_ADMIN accounts may lose their optional profile without losing
+administrator access.

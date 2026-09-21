@@ -147,7 +147,9 @@ Every published member has a complete public portfolio.
 Tasks:
 - [x] Dashboard overview
 - [x] Team content editor
-- [ ] Member CRUD
+- [x] Member CRUD
+- [x] Complete administrator Member editor with ordering and publication controls
+- [x] Explicitly confirmed Member-profile deletion that retains the User and audit history
 - [x] Member account management
 - [x] Create/invite additional TEAM_ADMIN accounts
 - [x] Promote, demote, activate, and deactivate administrators with audit logging

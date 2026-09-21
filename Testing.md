@@ -48,6 +48,9 @@ Cover critical user journeys.
 20. Demoting a TEAM_ADMIN with a Member profile removes team access but preserves their personal dashboard and content.
 21. Active MEMBER without a Member relation receives a safe setup error and no privileged access.
 22. An already authenticated user visiting `/login` is redirected to the dashboard allowed by their current role and Member relation.
+23. Administrator Member edits re-read the target, reject injected ownership/account fields, and revalidate old and new public slugs.
+24. Member-profile deletion requires exact confirmation, preserves the User and audit history, and cannot create an active MEMBER without a profile.
+25. Removing the final active TEAM_ADMIN's optional Member profile does not delete or deactivate that administrator account.
 
 ## Public-page tests
 
