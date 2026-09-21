@@ -51,6 +51,8 @@ Cover critical user journeys.
 23. Administrator Member edits re-read the target, reject injected ownership/account fields, and revalidate old and new public slugs.
 24. Member-profile deletion requires exact confirmation, preserves the User and audit history, and cannot create an active MEMBER without a profile.
 25. Removing the final active TEAM_ADMIN's optional Member profile does not delete or deactivate that administrator account.
+26. TEAM_ADMIN can create, edit, order, feature, publish, unpublish, and delete team projects while MEMBER and unauthenticated callers are rejected.
+27. Project publication rejects incomplete records and invalid date ranges, and project deletion requires the current trusted slug.
 
 ## Public-page tests
 

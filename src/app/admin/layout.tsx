@@ -31,6 +31,9 @@ export default async function DashboardLayout({
                 <Link className="rounded-full px-4 py-2 text-sm font-semibold text-white/65 transition hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb800]" href="/admin/members">
                   Members
                 </Link>
+                <Link className="rounded-full px-4 py-2 text-sm font-semibold text-white/65 transition hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb800]" href="/admin/projects">
+                  Projects
+                </Link>
                 <Link className="rounded-full px-4 py-2 text-sm font-semibold text-white/65 transition hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb800]" href="/admin/team">
                   Team content
                 </Link>

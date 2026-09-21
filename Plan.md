@@ -157,7 +157,7 @@ Tasks:
 - [ ] Prevent removal of the final active TEAM_ADMIN when account deletion is implemented
 - [x] Allow an administrator to create or link their own Member profile
 - [x] Preserve Member profile and content across promotion or demotion
-- [ ] Project CRUD
+- [x] Project CRUD
 - [ ] Project-member assignment
 - [ ] Technology management
 - [ ] Achievements

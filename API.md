@@ -52,6 +52,8 @@ PATCH  /api/admin/members/:id
 DELETE /api/admin/members/:id
 
 POST   /api/admin/projects
+GET    /api/admin/projects
+GET    /api/admin/projects/:id
 PATCH  /api/admin/projects/:id
 DELETE /api/admin/projects/:id
 
@@ -59,6 +61,12 @@ PATCH  /api/admin/team
 ```
 
 Only TEAM_ADMIN can perform these.
+
+Project mutations use allowlisted fields and server-side publication/date validation.
+Updates and deletes re-read the target by ID inside the transaction. Deletion requires
+the current project slug as explicit confirmation, cascades only the relationships owned
+by the Project according to `Schema.md`, appends an AuditLog record, and preserves prior
+audit history.
 
 In the current server-action implementation, deleting `/admin/members/:id` means deleting
 the Member profile and its owned content after exact-slug confirmation. It does not delete

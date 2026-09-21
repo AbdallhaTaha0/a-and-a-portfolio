@@ -202,6 +202,14 @@ only the Team identity, description, contact, location, and social-link fields i
 it does not expose administrative or audit data. Optional empty fields are omitted from
 the public interface.
 
+`/admin/projects` and `/admin/projects/[projectId]` provide TEAM_ADMIN Project CRUD.
+Administrators can create drafts, edit the complete Project record, control project
+status, featured/publication state, and editorial order, and explicitly confirm deletion
+with the current slug. Mutations re-read existing targets inside the transaction, audit
+the change atomically, and revalidate the project administration routes plus affected
+public list, detail, and landing-page paths. Contributor assignment, technology
+management, and gallery/media workflows remain separate milestones.
+
 ## Rendering
 
 Public content should favor server rendering/caching where practical.
