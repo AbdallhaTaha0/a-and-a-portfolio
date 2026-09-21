@@ -165,7 +165,7 @@ Tasks:
 - [x] Contact messages
 - [x] Audit log view
 - [ ] Preview
-- [ ] Publication controls
+- [x] Publication controls for Member profiles, team Projects, and Testimonials
 
 Deliverable:
 Multiple Team Admins can operate the platform without editing code.
