@@ -227,6 +227,11 @@ may manage titles, descriptions, issuer/date metadata, secure reference and imag
 and editorial order. Updates and exact-title confirmed deletes re-read the target inside
 the audited transaction and revalidate the dashboard and landing page.
 
+`/admin/testimonials` provides draft/published Testimonial CRUD with editorial ordering.
+Administrators manage attribution, content, optional secure avatar URLs, and publication
+state. Updates and exact-name confirmed deletes re-read the target, audit atomically, and
+revalidate the landing page so unpublished content remains outside public queries.
+
 ## Rendering
 
 Public content should favor server rendering/caching where practical.

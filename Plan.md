@@ -161,7 +161,7 @@ Tasks:
 - [x] Project-member assignment
 - [x] Technology management
 - [x] Achievements
-- [ ] Testimonials if enabled
+- [x] Testimonials
 - [ ] Contact messages
 - [ ] Audit log view
 - [ ] Preview

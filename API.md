@@ -84,6 +84,10 @@ and display order. Update and delete operations re-read the target; deletion req
 the current title as explicit confirmation. These team-level records are never editable
 through MEMBER-owned Achievement operations.
 
+Testimonial administration supports draft creation, complete editing, publication state,
+ordering, and exact-name confirmed deletion. Only TEAM_ADMIN may mutate testimonials;
+public reads must continue to select only published records and public fields.
+
 In the current server-action implementation, deleting `/admin/members/:id` means deleting
 the Member profile and its owned content after exact-slug confirmation. It does not delete
 the owning User. Active MEMBER accounts must be deactivated through the separate account
