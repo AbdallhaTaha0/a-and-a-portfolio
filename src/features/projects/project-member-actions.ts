@@ -10,6 +10,7 @@ import {
 } from "@/features/projects/project-member-schema";
 import { requireTeamAdmin } from "@/server/auth/current-user";
 import { prisma } from "@/server/db/prisma";
+import { checkAdminMutationLimit } from "@/server/security/admin-rate-limit";
 
 export type ProjectMemberActionState = {
   status: "idle" | "success" | "error";
@@ -121,6 +122,8 @@ export async function removeProjectMember(
   const administrator = await requireTeamAdmin();
   const parsed = projectMemberRemoveSchema.safeParse(readProjectMemberRemoveForm(formData));
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(administrator.id);
+  if (limitError) return { status: "error", message: limitError };
 
   let projectSlug: string;
   try {

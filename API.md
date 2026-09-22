@@ -25,9 +25,16 @@ GET /api/public/projects
 GET /api/public/projects/:slug
 GET /api/public/members
 GET /api/public/members/:slug
+POST /api/public/contact
 ```
 
 These endpoints must return only public fields.
+
+The current contact transport is a Server Action rather than a Route Handler. It accepts
+only name, email, subject, message, and the honeypot field; validates strict length and
+format limits, applies the shared client-address rate limit, and always creates a
+team-directed ContactMessage (`memberId = null`). It never returns the stored record or
+reveals internal database errors.
 
 ## Authentication
 

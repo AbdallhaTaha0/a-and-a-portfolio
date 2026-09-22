@@ -15,6 +15,7 @@ import {
 } from "@/features/technologies/technology-schema";
 import { requireTeamAdmin } from "@/server/auth/current-user";
 import { prisma } from "@/server/db/prisma";
+import { checkAdminMutationLimit } from "@/server/security/admin-rate-limit";
 
 export type TechnologyActionState = { status: "idle" | "success" | "error"; message: string; fieldErrors?: Record<string, string[]> };
 
@@ -85,6 +86,8 @@ export async function deleteTechnology(_state: TechnologyActionState, formData: 
   const admin = await requireTeamAdmin();
   const parsed = technologyDeleteSchema.safeParse(readTechnologyDeleteForm(formData));
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(admin.id);
+  if (limitError) return { status: "error", message: limitError };
   try {
     const outcome = await prisma.$transaction(async (tx) => {
       const target = await tx.technology.findUnique({ where: { id: parsed.data.technologyId }, select: { id: true, name: true, _count: { select: { projects: true } } } });
@@ -134,6 +137,8 @@ export async function removeProjectTechnology(_state: TechnologyActionState, for
   const admin = await requireTeamAdmin();
   const parsed = projectTechnologySchema.safeParse(readProjectTechnologyForm(formData));
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(admin.id);
+  if (limitError) return { status: "error", message: limitError };
   try {
     const result = await prisma.$transaction(async (tx) => {
       const target = await tx.projectTechnology.findUnique({ where: { projectId_technologyId: parsed.data }, select: { projectId: true, technologyId: true, project: { select: { slug: true } } } });

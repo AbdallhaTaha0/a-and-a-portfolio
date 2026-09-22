@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const DEFAULT_POSITION = 50;
 const ORANGE_EASING = 0.14;
@@ -77,19 +77,11 @@ export function AmbientBackground() {
     };
   }, []);
 
-  const initialPosition = {
-    "--orange-x": "50%",
-    "--orange-y": "42%",
-    "--white-x": "54%",
-    "--white-y": "48%",
-  } as CSSProperties;
-
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0 bg-[#080808] [background:radial-gradient(circle_28rem_at_var(--orange-x)_var(--orange-y),rgb(255_184_0/0.22),transparent_68%),radial-gradient(circle_36rem_at_var(--white-x)_var(--white-y),rgb(255_255_255/0.10),transparent_72%),linear-gradient(145deg,#080808_0%,#0d0d0d_55%,#080808_100%)] motion-reduce:[background:radial-gradient(circle_at_22%_20%,rgb(255_184_0/0.18),transparent_42%),radial-gradient(circle_at_78%_62%,rgb(255_255_255/0.08),transparent_44%),#080808]"
+      className="pointer-events-none fixed inset-0 z-0 bg-[#080808] [--orange-x:50%] [--orange-y:42%] [--white-x:54%] [--white-y:48%] [background:radial-gradient(circle_28rem_at_var(--orange-x)_var(--orange-y),rgb(255_184_0/0.22),transparent_68%),radial-gradient(circle_36rem_at_var(--white-x)_var(--white-y),rgb(255_255_255/0.10),transparent_72%),linear-gradient(145deg,#080808_0%,#0d0d0d_55%,#080808_100%)] motion-reduce:[background:radial-gradient(circle_at_22%_20%,rgb(255_184_0/0.18),transparent_42%),radial-gradient(circle_at_78%_62%,rgb(255_255_255/0.08),transparent_44%),#080808]"
       ref={layerRef}
-      style={initialPosition}
     />
   );
 }

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import { headers } from "next/headers";
 
 import { AmbientBackground } from "@/components/brand/ambient-background";
+import { getSiteOrigin, SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 import "./globals.css";
 
@@ -18,21 +20,37 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
-  ),
+  metadataBase: new URL(getSiteOrigin()),
+  applicationName: SITE_NAME,
   title: {
-    default: "A&A Portfolio",
-    template: "%s | A&A Portfolio",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "The shared portfolio of the A&A team and its members.",
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    type: "website",
+    url: "/",
+    siteName: SITE_NAME,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+  },
+  robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Enables Next.js to attach the per-request CSP nonce from src/proxy.ts.
+  await headers();
+
   return (
     <html lang="en">
       <body

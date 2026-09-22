@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { MemberPortrait } from "@/components/members/member-portrait";
+import { ProjectMedia } from "@/components/projects/project-media";
 import { PublicFooter, PublicHeader } from "@/components/site/public-header";
-import { safeExternalUrl } from "@/lib/urls";
+import { safeExternalUrl, safeHttpsUrl } from "@/lib/urls";
 import { getPublishedMemberBySlug } from "@/server/members/public-members";
 
 export const dynamic = "force-dynamic";
@@ -65,6 +66,12 @@ export async function generateMetadata({
         ? [{ url: imageUrl, alt: `${member.fullName} portrait` }]
         : undefined,
     },
+    twitter: {
+      card: imageUrl?.startsWith("https://") ? "summary_large_image" : "summary",
+      title: `${member.fullName} | A&A Portfolio`,
+      description,
+      images: imageUrl?.startsWith("https://") ? [imageUrl] : undefined,
+    },
   };
 }
 
@@ -77,7 +84,7 @@ export default async function MemberPage({ params }: MemberPageProps) {
   }
 
   const safeSocialLinks = member.socialLinks
-    .map((link) => ({ ...link, url: safeExternalUrl(link.url) }))
+    .map((link) => ({ ...link, url: safeHttpsUrl(link.url) }))
     .filter((link): link is typeof link & { url: string } => Boolean(link.url));
 
   return (
@@ -184,24 +191,60 @@ export default async function MemberPage({ params }: MemberPageProps) {
               <SectionHeading eyebrow="Selected work" title="Projects" />
               <div className="grid gap-4 sm:grid-cols-2">
                 {member.personalProjects.map((project) => {
-                  const liveUrl = safeExternalUrl(project.liveUrl);
-                  const githubUrl = safeExternalUrl(project.githubUrl);
+                  const liveUrl = safeHttpsUrl(project.liveUrl);
+                  const githubUrl = safeHttpsUrl(project.githubUrl);
                   return (
-                    <article className="rounded-3xl border border-white/10 bg-white/[0.025] p-6" key={project.slug}>
-                      {project.isFeatured ? <p className="text-xs font-bold tracking-[0.1em] text-[#ffc83d] uppercase">Featured</p> : null}
-                      <h3 className="mt-2 text-xl font-bold">{project.title}</h3>
-                      {project.shortDescription ?? project.description ? (
-                        <p className="mt-3 leading-7 text-white/60">{project.shortDescription ?? project.description}</p>
-                      ) : null}
-                      {liveUrl || githubUrl ? (
-                        <div className="mt-5 flex gap-4 text-sm font-semibold">
-                          {liveUrl ? <a className="text-[#ffc83d] hover:underline" href={liveUrl} rel="noreferrer" target="_blank">View project ↗</a> : null}
-                          {githubUrl ? <a className="text-white/55 hover:text-white" href={githubUrl} rel="noreferrer" target="_blank">GitHub ↗</a> : null}
-                        </div>
-                      ) : null}
+                    <article className="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.025]" key={project.slug}>
+                      <ProjectMedia alt={`${project.title} preview`} url={project.thumbnailUrl} />
+                      <div className="p-6">
+                        {project.isFeatured ? <p className="text-xs font-bold tracking-[0.1em] text-[#ffc83d] uppercase">Featured</p> : null}
+                        <h3 className="mt-2 text-xl font-bold">{project.title}</h3>
+                        {project.shortDescription ?? project.description ? (
+                          <p className="mt-3 leading-7 text-white/60">{project.shortDescription ?? project.description}</p>
+                        ) : null}
+                        {liveUrl || githubUrl ? (
+                          <div className="mt-5 flex gap-4 text-sm font-semibold">
+                            {liveUrl ? <a className="text-[#ffc83d] hover:underline" href={liveUrl} rel="noreferrer" target="_blank">View project ↗</a> : null}
+                            {githubUrl ? <a className="text-white/55 hover:text-white" href={githubUrl} rel="noreferrer" target="_blank">GitHub ↗</a> : null}
+                          </div>
+                        ) : null}
+                      </div>
                     </article>
                   );
                 })}
+              </div>
+            </section>
+          ) : null}
+
+          {member.projectMemberships.length ? (
+            <section className="grid gap-8 py-14 sm:py-20 lg:grid-cols-[15rem_minmax(0,1fr)]">
+              <SectionHeading eyebrow="Team contributions" title="Built with A&A" />
+              <div className="grid gap-4 sm:grid-cols-2">
+                {member.projectMemberships.map((membership) => (
+                  <Link
+                    className="group rounded-3xl border border-white/10 bg-white/[0.025] p-6 transition hover:-translate-y-1 hover:border-[#ffb800]/35"
+                    href={`/projects/${membership.project.slug}`}
+                    key={membership.project.slug}
+                  >
+                    <p className="text-xs font-bold tracking-[0.1em] text-[#ffc83d] uppercase">
+                      {membership.role ?? membership.project.status.replaceAll("_", " ")}
+                    </p>
+                    <h3 className="mt-3 text-xl font-bold group-hover:text-[#ffc83d]">
+                      {membership.project.title}
+                    </h3>
+                    {membership.project.shortDescription ? (
+                      <p className="mt-3 leading-7 text-white/60">
+                        {membership.project.shortDescription}
+                      </p>
+                    ) : null}
+                    {membership.contribution ? (
+                      <p className="mt-4 border-t border-white/10 pt-4 text-sm leading-6 text-white/50">
+                        {membership.contribution}
+                      </p>
+                    ) : null}
+                    <p className="mt-5 text-sm font-semibold text-[#ffc83d]">View project →</p>
+                  </Link>
+                ))}
               </div>
             </section>
           ) : null}
@@ -211,19 +254,20 @@ export default async function MemberPage({ params }: MemberPageProps) {
               <SectionHeading eyebrow="Recognition" title="Milestones" />
               <div className="grid gap-4 sm:grid-cols-2">
                 {member.certifications.map((item, index) => {
-                  const credentialUrl = safeExternalUrl(item.credentialUrl);
+                  const credentialUrl = safeHttpsUrl(item.credentialUrl);
                   return (
                     <article className="rounded-3xl border border-white/10 bg-white/[0.025] p-6" key={`${item.name}-${item.issuer}-${index}`}>
                       <p className="text-xs font-bold tracking-[0.1em] text-white/35 uppercase">Certification · {monthYear.format(item.issueDate)}</p>
                       <h3 className="mt-3 text-lg font-bold">{item.name}</h3>
                       <p className="mt-1 text-white/55">{item.issuer}</p>
+                      {item.expirationDate ? <p className="mt-2 text-xs text-white/35">Expires {monthYear.format(item.expirationDate)}</p> : null}
                       {item.description ? <p className="mt-4 leading-7 text-white/60">{item.description}</p> : null}
                       {credentialUrl ? <a className="mt-4 inline-block text-sm font-semibold text-[#ffc83d] hover:underline" href={credentialUrl} rel="noreferrer" target="_blank">View credential ↗</a> : null}
                     </article>
                   );
                 })}
                 {member.achievements.map((item, index) => {
-                  const itemUrl = safeExternalUrl(item.url);
+                  const itemUrl = safeHttpsUrl(item.url);
                   return (
                     <article className="rounded-3xl border border-white/10 bg-white/[0.025] p-6" key={`${item.title}-${index}`}>
                       <p className="text-xs font-bold tracking-[0.1em] text-white/35 uppercase">Achievement{item.date ? ` · ${monthYear.format(item.date)}` : ""}</p>

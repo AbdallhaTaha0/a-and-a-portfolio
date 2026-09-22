@@ -97,7 +97,9 @@ atomically, and writes an audit record. Invitation forms cannot supply ownership
 
 Every protected request must confirm that the current `User` exists and `isActive` is true. A deactivated account must be rejected even if its cookie has not yet expired.
 
-Deactivation, password reset, and role changes must revoke existing sessions as soon as the selected authentication system permits. These actions must be written to the audit log.
+Deactivation and role changes must revoke existing sessions as soon as Auth.js permits.
+These actions must be written to the audit log. Google and GitHub own credential recovery;
+the application has no password-reset flow.
 
 ## Authentication
 
@@ -155,7 +157,7 @@ Sessions must:
 
 - use cryptographically secure, unpredictable identifiers or framework-issued encrypted/signed values
 - expire on the server, not only in the browser
-- rotate after login, password changes, password resets, and role changes
+- rotate after login and role changes; add password-change/reset rotation only if local authentication is introduced
 - be invalidated on logout
 - support revoking all sessions after account compromise or an administrator action
 - avoid exposing tokens to Client Components
@@ -336,6 +338,12 @@ Configure security headers centrally in the Next.js application:
 - `Permissions-Policy` disabling capabilities the portfolio does not use
 - CSP `frame-ancestors 'none'` unless embedding becomes an explicit requirement
 
+The implementation uses `src/proxy.ts` to create a per-request CSP nonce for rendered
+pages. The root layout opts into request rendering so Next.js can attach that nonce to
+framework scripts and styles. Static response protections (`nosniff`, referrer policy,
+frame denial, permissions policy, and production HSTS) are configured in
+`next.config.ts`; CSP excludes metadata and framework asset routes from proxy processing.
+
 Avoid CSP `unsafe-eval`. Avoid `unsafe-inline` by using the supported Next.js nonce or hash approach where required. Add storage, analytics, or image-provider origins individually rather than using broad wildcards.
 
 Verify headers on deployed public pages, admin pages, redirects, 404 pages, and error responses. Production must not expose development overlays, stack traces, internal filesystem paths, SQL errors, or sensitive source maps.
@@ -347,13 +355,23 @@ Vercel functions may run on multiple instances, so rate limits must use a shared
 Rate-limit at minimum:
 
 - login
-- forgot-password and reset-password
+- forgot-password and reset-password, only if local authentication is introduced
 - contact form submission
 - file upload initiation and completion
 - expensive public search if search is later implemented
 - repeated destructive or bulk administrative operations
 
 Use a combination of route, account or normalized email where appropriate, and IP-derived signal. Do not permanently block legitimate users using only an IP address. Authentication failures should use progressive delay or temporary lockout and generic messages.
+
+The implemented limiter stores fixed-window counters in PostgreSQL so enforcement is
+shared by all Vercel function instances. Stored keys use an `AUTH_SECRET` HMAC digest;
+raw IP addresses are not persisted. OAuth initiation is limited independently for each
+provider and client address, while image uploads are limited by the authenticated User.
+The contact form is limited by client address. Account invitations, role and status
+changes, and administrator-only deletion/removal actions share one per-administrator
+high-impact bucket (20 attempts per hour). These actions fail closed if the limiter is
+unavailable; normal editorial saves do not spend this budget. The migration creating
+`RateLimitBucket` must be applied before these flows work against a live database.
 
 The contact form should use validation, rate limiting, and a honeypot. Add a CAPTCHA-like challenge only if actual abuse warrants the usability and privacy tradeoff.
 
@@ -376,7 +394,9 @@ Upload requirements:
 - generate storage keys and safe filenames on the server
 - never use the original filename as a trusted path
 - prevent path traversal and accidental overwrite
-- use short-lived, narrowly scoped signed upload URLs for direct uploads
+- use short-lived, narrowly scoped signed upload URLs for large direct uploads; the
+  current image flow is deliberately server-mediated and limited to 5 MB so binary
+  signatures and decoder limits can be enforced before anything reaches storage
 - verify the stored object before publishing its URL
 - remove privacy-sensitive metadata such as EXIF when appropriate
 - serve content with the correct type and `nosniff`
@@ -517,11 +537,11 @@ The automated suite must include all scenarios required by `Testing.md` plus the
 8. public users see only published members, projects, and personal projects
 9. public responses exclude private and administrative fields
 10. CSRF protection rejects invalid state-changing requests where applicable
-11. login, recovery, contact, and upload limits work across application instances
-12. reset tokens expire, are single-use, and cannot be replayed concurrently
+11. login, contact, and upload limits work across application instances; recovery limits are required only if local recovery is introduced
+12. if local recovery is introduced, reset tokens expire, are single-use, and cannot be replayed concurrently
 13. upload validation rejects unsupported, oversized, mismatched, and unauthorized files
 14. stored and reflected XSS payloads render as inert text
-15. deactivation, password reset, and role changes invalidate existing access as designed
+15. deactivation and role changes invalidate existing access as designed; password-reset invalidation applies only if local authentication is introduced
 16. missing slugs and unauthorized cross-owner lookups do not leak private resource existence
 
 Every security bug must receive a regression test before the fix is complete.
@@ -545,8 +565,8 @@ Attempt cross-member access by changing actual IDs and slugs, not only by checki
 - [ ] No bearer, session, or reset token is stored in browser storage
 - [ ] Production cookies use `HttpOnly`, `Secure`, and an appropriate `SameSite` value
 - [ ] Session expiry, rotation, logout, and revocation are tested
-- [ ] Password hashing and reset-token handling meet this document
-- [ ] Login and recovery responses do not reveal whether an account exists
+- [x] Password hashing and reset-token handling are not applicable to the selected OAuth-only implementation
+- [ ] Login responses do not reveal whether an account exists; apply the same rule to recovery if it is introduced
 - [ ] Deactivated accounts lose protected access
 
 ### Authorization and content
@@ -577,7 +597,7 @@ Attempt cross-member access by changing actual IDs and slugs, not only by checki
 - [ ] Backups are encrypted and a restore has been tested
 - [ ] Uploads enforce ownership, file signature, extension, size, dimensions, and safe storage keys
 - [ ] Direct-upload URLs are short-lived and narrowly scoped
-- [ ] Shared serverless rate limiting protects login, recovery, contact, and uploads
+- [ ] Shared serverless rate limiting protects login, contact, and uploads; include recovery if it is introduced
 - [ ] Retention and deletion rules exist for contact messages, audit logs, accounts, and media
 
 ### Operations

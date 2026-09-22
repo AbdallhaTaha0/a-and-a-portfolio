@@ -171,6 +171,35 @@ gains team administration without losing their personal workspace or public prof
 An already authenticated active user who visits `/login` is routed through the same
 capability resolution instead of being shown provider sign-in controls again.
 
+`/admin/profile` is the member's personal workspace. Education and experience have
+dedicated timeline editors; `/admin/profile/[section]` provides the shared editor for
+skills, certifications, personal achievements, personal projects, and social links.
+Every read starts with the Member resolved from the authenticated server session. Every
+create writes that trusted `memberId`, while updates and deletes use a compound
+`recordId + memberId` filter so submitted IDs cannot cross ownership boundaries. Inputs
+are allowlisted and validated, URLs must use HTTPS, mutations are audited, and the
+affected public profile is revalidated. Personal projects have independent draft and
+published states and must contain both summary and full descriptions before publication.
+
+Published member pages select only public profile fields. They hide empty sections,
+exclude draft personal projects, sanitize external links, and include team-project roles
+and contributions only when the related team Project is published. Team-project
+participation remains controlled by TEAM_ADMIN; the member portfolio editor cannot
+create or alter those relationships.
+
+`/admin/profile/preview` is an authenticated, non-public rendering of the current
+Member profile. It can render a draft Member, but applies the same nested publication
+filters as the visitor page: draft PersonalProjects and contributions to unpublished
+team Projects remain excluded. The preview route derives the Member ID from the session
+and never accepts a member slug or ID from the browser.
+
+`/admin/settings` is shared by active MEMBER and TEAM_ADMIN accounts. OAuth providers
+remain authoritative for verified email and provider identity; role and active status
+remain administrator-controlled. The user may change only the local dashboard display
+name. The server action allowlists that field, constrains the update to the authenticated
+active User, writes an audit event in the same transaction, and never returns Account
+tokens or Session records to the page.
+
 `/admin/members` is the protected account-entry point. A TEAM_ADMIN can pre-authorize
 an exact email address as either MEMBER or TEAM_ADMIN. Creating a MEMBER also creates
 its linked draft Member profile; creating a TEAM_ADMIN leaves the Member relation
@@ -202,6 +231,21 @@ only the Team identity, description, contact, location, and social-link fields i
 it does not expose administrative or audit data. Optional empty fields are omitted from
 the public interface.
 
+`/projects` and `/projects/[slug]` are public, request-rendered views backed only by
+Projects with `isPublished = true`. Public project reads use explicit field selections
+and include ordered technologies, published Member contributors, roles, contributions,
+gallery metadata, safe external links, and related published projects. Unpublished or
+unknown slugs return the same not-found experience. Featured published projects also
+appear on the home page. Existing administrator project mutations revalidate the home,
+listing, old-slug, and new-slug routes as appropriate.
+
+The public home page also composes bounded highlight queries for published Members,
+Technologies attached to published Projects, ordered TeamAchievements, and published
+Testimonials. Each query uses an explicit public-field selection and the page omits an
+entire section when no eligible records exist. This keeps draft member and testimonial
+content, technologies used only by draft projects, and administrative data out of the
+visitor response while allowing dashboard-managed content to appear without code edits.
+
 `/admin/projects` and `/admin/projects/[projectId]` provide TEAM_ADMIN Project CRUD.
 Administrators can create drafts, edit the complete Project record, control project
 status, featured/publication state, and editorial order, and explicitly confirm deletion
@@ -213,6 +257,12 @@ assignment is implemented on the project detail editor: administrators may add a
 edit their project role and contribution, or explicitly remove the relationship. The
 server re-reads both referenced records, never treats participation as ownership, audits
 every relationship change, and revalidates the affected administrative and public paths.
+
+`/admin/projects/[projectId]/preview` is a TEAM_ADMIN-only rendering of saved Project
+content, including drafts. It reuses the public project presentation, keeps the public
+Member publication filter and related published-project rules, and never makes the
+previewed Project available through `/projects/[slug]` unless it is independently
+published.
 
 `/admin/technologies` manages the reusable Technology dictionary, while project detail
 editors manage ProjectTechnology assignments. Technology creation and editing allowlist
@@ -238,6 +288,11 @@ UNREAD/READ/ARCHIVED status transitions. Status mutations re-read the message an
 only IDs and status metadata; private message bodies and contact details are never copied
 into audit or operational logs.
 
+The public landing-page contact form creates team-directed ContactMessage records. It
+uses strict server-side validation, a visually hidden honeypot, and the shared
+PostgreSQL-backed client-address rate limit. Failures return generic actionable copy and
+operational logs never include the submitted name, email, subject, or message body.
+
 `/admin/audit` is a read-only TEAM_ADMIN view of the latest 100 AuditLog records. It
 selects only actor identity, action/entity references, timestamps, and recorded metadata.
 The UI displays only scalar metadata values in a stable order and exposes no mutation or
@@ -250,6 +305,10 @@ Public content should favor server rendering/caching where practical.
 Admin pages can use interactive client components for forms, dialogs, tables, uploads, and previews.
 
 Do not make the entire application a client-side SPA merely because some dashboard components are interactive.
+
+Public and dashboard route trees have branded error boundaries with retry actions and
+safe copy. Public errors may display only Next.js's opaque digest as a support reference;
+raw exception messages, database details, and integration responses remain server-side.
 
 ## Data fetching
 
@@ -272,17 +331,30 @@ When published content changes:
 
 ## Images
 
-Use a dedicated image/object-storage provider.
+Vercel Blob is the selected public image/object-storage provider. The server-side
+abstraction owns upload, optimization, metadata persistence, and deletion; UI and domain
+actions do not call the provider SDK directly.
 
-Recommended abstraction:
+Implemented abstraction:
 
 ```text
 uploadImage()
-deleteImage()
-getPublicUrl()
+deleteUploadedBlob()
+deleteMediaIfUnreferenced()
 ```
 
-Do not spread provider-specific logic throughout UI components.
+Uploads are capped at 5 MB and accept JPEG, PNG, and WebP only. The server verifies MIME,
+extension, and binary signature, then decodes with a 40-megapixel safety limit, enforces
+dimensions between 32 and 12,000 pixels per side, rotates from orientation metadata,
+strips source metadata, resizes without enlargement, and stores an immutable WebP object.
+The 6 MB Server Action limit leaves room for multipart overhead.
+
+Every upload is authorized against its destination before storage. The database then
+attaches the Blob URL and creates the Media record in one transaction. A failed database
+attachment deletes the newly uploaded object. Replacements, gallery deletions, project
+deletions, personal-project deletions, and Member-profile deletions invoke reference-aware
+cleanup; a Blob is deleted only when no supported content field still references its URL.
+Original filenames are retained only as untrusted metadata and are never used as paths.
 
 ## Serverless considerations
 
@@ -297,6 +369,11 @@ Use Prisma in a server-safe singleton pattern appropriate to the deployment envi
 
 Do not create uncontrolled database clients per request.
 
+Abuse-sensitive operations use PostgreSQL-backed fixed-window counters rather than
+process memory. Counter keys contain a scope and an HMAC digest derived with
+`AUTH_SECRET`, so raw client IP addresses are not persisted. OAuth initiation is limited
+per provider and client address; media upload is limited per authenticated User.
+
 ## Environment variables
 
 Examples:
@@ -305,7 +382,7 @@ Examples:
 DATABASE_URL=
 AUTH_SECRET=
 NEXT_PUBLIC_APP_URL=
-STORAGE_*=
+BLOB_READ_WRITE_TOKEN=
 EMAIL_*=
 ```
 
@@ -316,3 +393,11 @@ Never expose:
 - private storage credentials
 - authentication secrets
 - email API keys
+
+## Continuous integration
+
+GitHub Actions installs from the lockfile, generates and validates Prisma, runs ESLint,
+strict TypeScript, the automated suite, a high-severity production dependency audit, and
+the production Next.js build. CI uses syntactically valid non-production placeholders;
+it never receives production database, OAuth, storage, or authentication credentials.
+Dependabot proposes reviewed npm and GitHub Actions updates on a bounded schedule.

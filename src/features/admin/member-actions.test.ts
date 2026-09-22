@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   auditCreate: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn(),
+  checkAdminMutationLimit: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
@@ -19,6 +20,9 @@ vi.mock("@/server/auth/current-user", () => ({
 }));
 vi.mock("@/server/db/prisma", () => ({
   prisma: { $transaction: mocks.transaction },
+}));
+vi.mock("@/server/security/admin-rate-limit", () => ({
+  checkAdminMutationLimit: mocks.checkAdminMutationLimit,
 }));
 
 import {
@@ -49,10 +53,13 @@ function deleteForm(confirmation = "old-slug") {
 describe("administrator Member actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.checkAdminMutationLimit.mockResolvedValue(null);
     mocks.requireTeamAdmin.mockResolvedValue({ id: "trusted-admin" });
     mocks.memberFindUnique.mockResolvedValue({
       id: "trusted-member",
       slug: "old-slug",
+      profileImageUrl: null,
+      personalProjects: [],
       user: { id: "owner-user", role: "MEMBER", isActive: false },
     });
     mocks.memberUpdate.mockResolvedValue({});
@@ -73,6 +80,15 @@ describe("administrator Member actions", () => {
           auditLog: { create: mocks.auditCreate },
         }),
     );
+  });
+
+  it("blocks profile deletion before its transaction when rate limited", async () => {
+    mocks.checkAdminMutationLimit.mockResolvedValueOnce("Too many sensitive changes were attempted recently. Please try again later.");
+
+    const result = await deleteMemberProfileAsAdmin(idleState, deleteForm());
+
+    expect(result.status).toBe("error");
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 
   it("rejects callers who are not authorized administrators", async () => {
@@ -146,6 +162,8 @@ describe("administrator Member actions", () => {
     mocks.memberFindUnique.mockResolvedValueOnce({
       id: "trusted-member",
       slug: "old-slug",
+      profileImageUrl: null,
+      personalProjects: [],
       user: { id: "owner-user", role: "MEMBER", isActive: true },
     });
 
@@ -181,6 +199,8 @@ describe("administrator Member actions", () => {
     mocks.memberFindUnique.mockResolvedValueOnce({
       id: "trusted-member",
       slug: "old-slug",
+      profileImageUrl: null,
+      personalProjects: [],
       user: { id: "final-admin", role: "TEAM_ADMIN", isActive: true },
     });
 

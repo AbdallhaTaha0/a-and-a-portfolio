@@ -18,6 +18,7 @@ import {
 import { canApplyAccountCapabilityChange } from "@/server/admin/account-policy";
 import { requireTeamAdmin } from "@/server/auth/current-user";
 import { prisma } from "@/server/db/prisma";
+import { checkAdminMutationLimit } from "@/server/security/admin-rate-limit";
 
 export type AccountActionState = {
   status: "idle" | "success" | "error";
@@ -110,6 +111,8 @@ export async function inviteMemberAccount(
   const administrator = await requireTeamAdmin();
   const parsed = memberInvitationSchema.safeParse(readMemberInvitationForm(formData));
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(administrator.id);
+  if (limitError) return { status: "error", message: limitError };
 
   try {
     await prisma.$transaction(async (transaction) => {
@@ -162,6 +165,8 @@ export async function inviteAdministratorAccount(
     readAdministratorInvitationForm(formData),
   );
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(administrator.id);
+  if (limitError) return { status: "error", message: limitError };
 
   try {
     await prisma.$transaction(async (transaction) => {
@@ -203,6 +208,8 @@ export async function changeAccountRole(
   const administrator = await requireTeamAdmin();
   const parsed = accountRoleChangeSchema.safeParse(readAccountRoleChangeForm(formData));
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(administrator.id);
+  if (limitError) return { status: "error", message: limitError };
 
   try {
     const outcome = await prisma.$transaction(
@@ -298,6 +305,8 @@ export async function changeAccountStatus(
   const administrator = await requireTeamAdmin();
   const parsed = accountStatusChangeSchema.safeParse(readAccountStatusChangeForm(formData));
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(administrator.id);
+  if (limitError) return { status: "error", message: limitError };
 
   try {
     const outcome = await prisma.$transaction(

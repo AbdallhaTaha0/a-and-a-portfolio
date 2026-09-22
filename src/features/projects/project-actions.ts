@@ -15,6 +15,11 @@ import {
 } from "@/features/projects/project-schema";
 import { requireTeamAdmin } from "@/server/auth/current-user";
 import { prisma } from "@/server/db/prisma";
+import { checkAdminMutationLimit } from "@/server/security/admin-rate-limit";
+import {
+  deleteMediaIfUnreferenced,
+  deleteMediaListIfUnreferenced,
+} from "@/server/media/storage";
 
 export type ProjectActionState = {
   status: "idle" | "success" | "error";
@@ -113,11 +118,12 @@ export async function updateProject(
   if (!parsed.success) return validationFailure(parsed.error);
 
   let oldSlug: string;
+  let oldThumbnailUrl: string | null;
   try {
     const outcome = await prisma.$transaction(async (transaction) => {
       const target = await transaction.project.findUnique({
         where: { id: parsed.data.projectId },
-        select: { id: true, slug: true },
+        select: { id: true, slug: true, thumbnailUrl: true },
       });
       if (!target) return null;
       await transaction.project.update({
@@ -138,10 +144,11 @@ export async function updateProject(
           },
         },
       });
-      return target.slug;
+      return { slug: target.slug, thumbnailUrl: target.thumbnailUrl };
     });
     if (!outcome) return { status: "error", message: "That project is no longer available." };
-    oldSlug = outcome;
+    oldSlug = outcome.slug;
+    oldThumbnailUrl = outcome.thumbnailUrl;
   } catch (error) {
     const conflict = conflictFailure(error);
     if (conflict) return conflict;
@@ -150,6 +157,12 @@ export async function updateProject(
   }
 
   revalidateProjectPages(parsed.data.projectId, oldSlug, parsed.data.slug);
+  if (
+    oldThumbnailUrl &&
+    oldThumbnailUrl !== (parsed.data.thumbnailUrl ?? null)
+  ) {
+    await deleteMediaIfUnreferenced(oldThumbnailUrl);
+  }
   return {
     status: "success",
     message: parsed.data.isPublished ? "Project saved and published." : "Project draft saved.",
@@ -163,13 +176,21 @@ export async function deleteProject(
   const administrator = await requireTeamAdmin();
   const parsed = projectDeleteSchema.safeParse(readProjectDeleteForm(formData));
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(administrator.id);
+  if (limitError) return { status: "error", message: limitError };
 
   let deletedSlug: string;
+  let deletedMediaUrls: string[] = [];
   try {
     const outcome = await prisma.$transaction(async (transaction) => {
       const target = await transaction.project.findUnique({
         where: { id: parsed.data.projectId },
-        select: { id: true, slug: true },
+        select: {
+          id: true,
+          slug: true,
+          thumbnailUrl: true,
+          images: { select: { url: true } },
+        },
       });
       if (!target) return { status: "NOT_FOUND" as const };
       if (parsed.data.confirmation !== target.slug) {
@@ -185,7 +206,13 @@ export async function deleteProject(
           metadata: { slug: target.slug },
         },
       });
-      return { status: "DELETED" as const, slug: target.slug };
+      return {
+        status: "DELETED" as const,
+        slug: target.slug,
+        mediaUrls: [target.thumbnailUrl, ...target.images.map(({ url }) => url)].filter(
+          (url): url is string => Boolean(url),
+        ),
+      };
     });
     if (outcome.status === "NOT_FOUND") {
       return { status: "error", message: "That project is no longer available." };
@@ -198,11 +225,13 @@ export async function deleteProject(
       };
     }
     deletedSlug = outcome.slug;
+    deletedMediaUrls = outcome.mediaUrls;
   } catch (error) {
     logProjectFailure("deleteProject", administrator.id, error);
     return { status: "error", message: "The project could not be deleted. Please try again." };
   }
 
   revalidateProjectPages(parsed.data.projectId, deletedSlug);
+  await deleteMediaListIfUnreferenced(deletedMediaUrls);
   redirect("/admin/projects?projectDeleted=1");
 }

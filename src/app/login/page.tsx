@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -10,11 +11,18 @@ import {
 import { getCurrentUser } from "@/server/auth/current-user";
 import { resolveLoginDestination } from "@/server/auth/policy";
 
+export const metadata: Metadata = {
+  title: "Team sign in",
+  description: "Private sign-in for invited A&A team members.",
+  robots: { index: false, follow: false, nocache: true },
+};
+
 const errorMessages: Record<string, string> = {
   AccessDenied: "This account has not been invited or is currently inactive.",
   AccountInactive: "This account is inactive. Contact the team administrator.",
   OAuthAccountNotLinked: "Use the provider previously linked to this account.",
   OAuthCallbackError: "The provider could not complete sign-in. Please try again.",
+  TooManyRequests: "Too many sign-in attempts. Wait a few minutes and try again.",
   ProfileSetupRequired:
     "Your account is active, but a team administrator still needs to link your profile.",
 };

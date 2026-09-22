@@ -13,6 +13,11 @@ import {
 } from "@/features/admin/member-schema";
 import { requireTeamAdmin } from "@/server/auth/current-user";
 import { prisma } from "@/server/db/prisma";
+import { checkAdminMutationLimit } from "@/server/security/admin-rate-limit";
+import {
+  deleteMediaIfUnreferenced,
+  deleteMediaListIfUnreferenced,
+} from "@/server/media/storage";
 
 export type MemberAdminActionState = {
   status: "idle" | "success" | "error";
@@ -61,6 +66,7 @@ export async function updateMemberAsAdmin(
   if (!parsed.success) return validationFailure(parsed.error);
 
   let previousSlug: string;
+  let previousProfileImageUrl: string | null;
   try {
     const outcome = await prisma.$transaction(async (transaction) => {
       const target = await transaction.member.findUnique({
@@ -68,6 +74,7 @@ export async function updateMemberAsAdmin(
         select: {
           id: true,
           slug: true,
+          profileImageUrl: true,
           user: { select: { id: true } },
         },
       });
@@ -93,13 +100,14 @@ export async function updateMemberAsAdmin(
         },
       });
 
-      return target.slug;
+      return { slug: target.slug, profileImageUrl: target.profileImageUrl };
     });
 
     if (!outcome) {
       return { status: "error", message: "That Member profile is no longer available." };
     }
-    previousSlug = outcome;
+    previousSlug = outcome.slug;
+    previousProfileImageUrl = outcome.profileImageUrl;
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -119,6 +127,12 @@ export async function updateMemberAsAdmin(
   }
 
   revalidateMemberPages(parsed.data.memberId, previousSlug, parsed.data.slug);
+  if (
+    previousProfileImageUrl &&
+    previousProfileImageUrl !== (parsed.data.profileImageUrl ?? null)
+  ) {
+    await deleteMediaIfUnreferenced(previousProfileImageUrl);
+  }
   return {
     status: "success",
     message: parsed.data.isPublished
@@ -136,8 +150,11 @@ export async function deleteMemberProfileAsAdmin(
     readAdminMemberDeleteForm(formData),
   );
   if (!parsed.success) return validationFailure(parsed.error);
+  const limitError = await checkAdminMutationLimit(administrator.id);
+  if (limitError) return { status: "error", message: limitError };
 
   let deletedSlug: string;
+  let deletedMediaUrls: string[] = [];
   try {
     const outcome = await prisma.$transaction(async (transaction) => {
       const target = await transaction.member.findUnique({
@@ -145,6 +162,8 @@ export async function deleteMemberProfileAsAdmin(
         select: {
           id: true,
           slug: true,
+          profileImageUrl: true,
+          personalProjects: { select: { thumbnailUrl: true } },
           user: {
             select: {
               id: true,
@@ -177,7 +196,14 @@ export async function deleteMemberProfileAsAdmin(
         },
       });
 
-      return { status: "DELETED" as const, slug: target.slug };
+      return {
+        status: "DELETED" as const,
+        slug: target.slug,
+        mediaUrls: [
+          target.profileImageUrl,
+          ...target.personalProjects.map(({ thumbnailUrl }) => thumbnailUrl),
+        ].filter((url): url is string => Boolean(url)),
+      };
     });
 
     if (outcome.status === "NOT_FOUND") {
@@ -198,6 +224,7 @@ export async function deleteMemberProfileAsAdmin(
       };
     }
     deletedSlug = outcome.slug;
+    deletedMediaUrls = outcome.mediaUrls;
   } catch (error) {
     logMemberFailure("deleteMemberProfileAsAdmin", administrator.id, error);
     return {
@@ -207,5 +234,6 @@ export async function deleteMemberProfileAsAdmin(
   }
 
   revalidateMemberPages(parsed.data.memberId, deletedSlug);
+  await deleteMediaListIfUnreferenced(deletedMediaUrls);
   redirect("/admin/members?profileDeleted=1");
 }

@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requireTeamAdmin: vi.fn(), transaction: vi.fn(), technologyCreate: vi.fn(), technologyFindUnique: vi.fn(), technologyUpdate: vi.fn(), technologyDelete: vi.fn(),
-  projectFindUnique: vi.fn(), projectTechnologyFindUnique: vi.fn(), projectTechnologyUpsert: vi.fn(), projectTechnologyDelete: vi.fn(), auditCreate: vi.fn(), revalidatePath: vi.fn(),
+  projectFindUnique: vi.fn(), projectTechnologyFindUnique: vi.fn(), projectTechnologyUpsert: vi.fn(), projectTechnologyDelete: vi.fn(), auditCreate: vi.fn(), revalidatePath: vi.fn(), checkAdminMutationLimit: vi.fn(),
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/server/auth/current-user", () => ({ requireTeamAdmin: mocks.requireTeamAdmin }));
 vi.mock("@/server/db/prisma", () => ({ prisma: { $transaction: mocks.transaction } }));
+vi.mock("@/server/security/admin-rate-limit", () => ({ checkAdminMutationLimit: mocks.checkAdminMutationLimit }));
 
 import { assignProjectTechnology, createTechnology, deleteTechnology, removeProjectTechnology, updateTechnology } from "./technology-actions";
 const idle = { status: "idle" as const, message: "" };
@@ -15,7 +16,7 @@ const relationForm = () => { const data = new FormData(); data.set("projectId", 
 
 describe("technology actions", () => {
   beforeEach(() => {
-    vi.clearAllMocks(); mocks.requireTeamAdmin.mockResolvedValue({ id: "trusted-admin" }); mocks.technologyCreate.mockResolvedValue({ id: "trusted-tech" });
+    vi.clearAllMocks(); mocks.checkAdminMutationLimit.mockResolvedValue(null); mocks.requireTeamAdmin.mockResolvedValue({ id: "trusted-admin" }); mocks.technologyCreate.mockResolvedValue({ id: "trusted-tech" });
     mocks.technologyFindUnique.mockResolvedValue({ id: "trusted-tech", name: "React", _count: { projects: 0 } }); mocks.technologyUpdate.mockResolvedValue({}); mocks.technologyDelete.mockResolvedValue({});
     mocks.projectFindUnique.mockResolvedValue({ id: "trusted-project", slug: "project-slug" }); mocks.projectTechnologyUpsert.mockResolvedValue({}); mocks.projectTechnologyDelete.mockResolvedValue({}); mocks.auditCreate.mockResolvedValue({});
     mocks.transaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => callback({ technology: { create: mocks.technologyCreate, findUnique: mocks.technologyFindUnique, update: mocks.technologyUpdate, delete: mocks.technologyDelete }, project: { findUnique: mocks.projectFindUnique }, projectTechnology: { findUnique: mocks.projectTechnologyFindUnique, upsert: mocks.projectTechnologyUpsert, delete: mocks.projectTechnologyDelete }, auditLog: { create: mocks.auditCreate } }));

@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_APP_URL: "https://ci.example.com"
+      DATABASE_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?sslmode=disable"
+      DIRECT_URL: "postgresql://ci:ci@127.0.0.1:5432/ci?sslmode=disable"
+      AUTH_SECRET: "ci-only-secret-not-used-outside-the-build-environment-1234567890"
+      AUTH_GOOGLE_ID: "ci-google-client-id"
+      AUTH_GOOGLE_SECRET: "ci-google-client-secret"
+      AUTH_GITHUB_ID: "ci-github-client-id"
+      AUTH_GITHUB_SECRET: "ci-github-client-secret"
+      AUTH_ADMIN_EMAIL: "admin@ci.example.com"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Validate Prisma schema
+        run: npm run prisma:validate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Test
+        run: npm run test
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Build production application
+        run: npm run build

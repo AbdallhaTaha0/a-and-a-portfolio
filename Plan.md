@@ -84,24 +84,24 @@ Secure TEAM_ADMIN and MEMBER authentication.
 ## Phase 3 — Public team website
 
 Tasks:
-- [ ] Global layout
+- [x] Global layout
 - [x] Public landing page and navigation work without authentication
 - [x] Landing-page content is database-backed and limited to public Team fields
 - [x] Navigation
 - [x] Hero
 - [x] About
-- [ ] Featured projects
-- [ ] Projects listing
-- [ ] Team members
-- [ ] Technologies
-- [ ] Achievements
+- [x] Featured projects
+- [x] Projects listing
+- [x] Team members
+- [x] Technologies
+- [x] Achievements
 - [x] Contact
 - [x] Footer
-- [ ] Responsive states
-- [ ] SEO metadata
-- [ ] sitemap
-- [ ] robots
-- [ ] 404
+- [x] Responsive states
+- [x] SEO metadata
+- [x] sitemap
+- [x] robots
+- [x] 404
 
 Deliverable:
 Production-quality public team website.
@@ -109,15 +109,15 @@ Production-quality public team website.
 ## Phase 4 — Public projects
 
 Tasks:
-- [ ] Project detail page
-- [ ] Project gallery
-- [ ] Technologies
-- [ ] Team members
-- [ ] Roles/contributions
-- [ ] GitHub/live links
-- [ ] Status
-- [ ] SEO/social metadata
-- [ ] Related projects
+- [x] Project detail page
+- [x] Project gallery
+- [x] Technologies
+- [x] Team members
+- [x] Roles/contributions
+- [x] GitHub/live links
+- [x] Status
+- [x] SEO/social metadata
+- [x] Related projects
 
 Deliverable:
 Complete public project experience.
@@ -130,14 +130,14 @@ Tasks:
 - [x] Published member list and profiles are navigable without authentication
 - [x] Education
 - [x] Experience
-- [ ] Skills
-- [ ] Certifications
-- [ ] Achievements
-- [ ] Personal projects
-- [ ] Team projects/contributions
-- [ ] Social links
+- [x] Skills
+- [x] Certifications
+- [x] Achievements
+- [x] Personal projects
+- [x] Team projects/contributions
+- [x] Social links
 - [x] Member SEO metadata
-- [ ] Member contact
+- [x] Member contact
 
 Deliverable:
 Every published member has a complete public portfolio.
@@ -164,7 +164,7 @@ Tasks:
 - [x] Testimonials
 - [x] Contact messages
 - [x] Audit log view
-- [ ] Preview
+- [x] Preview
 - [x] Publication controls for Member profiles, team Projects, and Testimonials
 
 Deliverable:
@@ -173,20 +173,20 @@ Multiple Team Admins can operate the platform without editing code.
 ## Phase 7 — Member dashboard
 
 Tasks:
-- [ ] Dashboard overview
+- [x] Dashboard overview
 - [x] Profile editor
 - [x] Resolve the editable Member from the authenticated session, never request ownership
 - [x] Education CRUD
 - [x] Experience CRUD
-- [ ] Skills CRUD
-- [ ] Certifications CRUD
-- [ ] Achievements CRUD
-- [ ] Personal project CRUD
-- [ ] Social links CRUD
-- [ ] Preview
+- [x] Skills CRUD
+- [x] Certifications CRUD
+- [x] Achievements CRUD
+- [x] Personal project CRUD
+- [x] Social links CRUD
+- [x] Preview
 - [x] Publish/unpublish
-- [ ] Account settings
-- [ ] Reject cross-member reads and mutations after server-side ownership checks
+- [x] Account settings
+- [x] Reject cross-member reads and mutations after server-side ownership checks
 - [x] Allow TEAM_ADMIN with a linked Member record to use their own personal workspace
 
 Deliverable:
@@ -195,13 +195,13 @@ Each member can fully maintain their own public portfolio.
 ## Phase 8 — Media
 
 Tasks:
-- [ ] Select storage provider
-- [ ] Upload abstraction
-- [ ] Image validation
-- [ ] Image optimization
-- [ ] Profile image upload
-- [ ] Project image upload
-- [ ] Delete unused media safely
+- [x] Select storage provider
+- [x] Upload abstraction
+- [x] Image validation
+- [x] Image optimization
+- [x] Profile image upload
+- [x] Project image upload
+- [x] Delete unused media safely
 
 Deliverable:
 Reliable image/file management.
@@ -212,10 +212,23 @@ Tasks:
 - [ ] Unit tests
 - [ ] Integration tests
 - [ ] E2E critical flows
+  - [x] Read-only visitor navigation and anonymous access browser tests
+  - [x] Read-only MEMBER and TEAM_ADMIN browser checks with disposable sessions
+  - [x] Representative Member publication, home editing, invitation, and final-admin mutation flows on an isolated test branch
+  - [x] Team project draft, publication validation, public visibility, and deletion browser coverage
+  - [x] Member-owned skills, links, certifications, achievements, and personal-project publication browser coverage
+  - [x] Project contributor/technology assignment and public rendering browser coverage
+  - [x] Browser upload rejection for unsupported, oversized, and spoofed image files
+  - [ ] Real OAuth callback, successful Blob uploads, relationship removal, and complete owned-model browser coverage
 - [ ] Authorization tests
 - [ ] Rate limiting
-- [ ] Security headers
-- [ ] Error handling
+  - [x] Shared PostgreSQL-backed limiter
+  - [x] OAuth initiation limits by provider and client signal
+  - [x] Public contact submission limits
+  - [x] Authenticated media-upload limits
+  - [x] Repeated destructive and account-invitation administrative-operation limits
+- [x] Security headers
+- [x] Error handling
 - [ ] Accessibility review
 - [ ] Mobile review
 - [ ] Performance review
@@ -224,6 +237,8 @@ Deliverable:
 Release candidate.
 
 ## Phase 10 — Deployment
+
+Operational steps and post-deployment verification are documented in `Deployment.md`.
 
 Tasks:
 - [ ] Production PostgreSQL
@@ -247,7 +262,7 @@ Only after MVP is stable:
 - [ ] Draft/version history
 - [ ] Advanced audit UI
 - [ ] Notifications
-- [ ] Testimonials
+- [x] Testimonials
 - [ ] Advanced media library
 - [ ] Multiple teams
 - [ ] Custom member sections

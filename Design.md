@@ -456,15 +456,15 @@ Do not generate a single generic preview for every page when page-specific conte
 - [x] Implement component styling with Tailwind utility classes; keep `globals.css` limited to the Tailwind import
 - [ ] Create optimized transparent and responsive derivatives from `logo.png` while preserving the source
 - [ ] Define color, typography, spacing, radius, shadow, and motion tokens centrally
-- [ ] Load fonts through `next/font`
-- [ ] Build the static visual hierarchy before adding background motion
-- [ ] Implement the cursor layer without pointer-driven React rerenders
-- [ ] Add touch and reduced-motion fallbacks
+- [x] Load fonts through `next/font`
+- [x] Build the static visual hierarchy before adding background motion
+- [x] Implement the cursor layer without pointer-driven React rerenders
+- [x] Add touch and reduced-motion fallbacks
 - [ ] Verify contrast at the brightest animated-background positions
 - [ ] Test public navigation, cards, forms, galleries, and focus order with keyboard only
 - [ ] Test mobile layouts and mid-range-device animation performance
-- [ ] Keep dashboard surfaces calm and data-focused
-- [ ] Confirm every public section uses database-driven content
+- [x] Keep dashboard surfaces calm and data-focused
+- [x] Confirm every public section uses database-driven content
 - [ ] Capture page-specific social preview images where supported
 
 ## Design acceptance criteria

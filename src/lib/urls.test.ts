@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { safeExternalUrl } from "./urls";
+import { safeExternalUrl, safeHttpsUrl } from "./urls";
 
 describe("safeExternalUrl", () => {
   it("allows HTTP and HTTPS links", () => {
@@ -16,5 +16,12 @@ describe("safeExternalUrl", () => {
     expect(safeExternalUrl("javascript:alert(1)")).toBeNull();
     expect(safeExternalUrl("not a url")).toBeNull();
     expect(safeExternalUrl(null)).toBeNull();
+  });
+
+  it("can enforce HTTPS for production-facing external links", () => {
+    expect(safeHttpsUrl("https://example.com/profile")).toBe(
+      "https://example.com/profile",
+    );
+    expect(safeHttpsUrl("http://example.com/profile")).toBeNull();
   });
 });

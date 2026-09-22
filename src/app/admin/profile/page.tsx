@@ -1,16 +1,17 @@
 import Link from "next/link";
 
+import { ImageUploadForm } from "@/features/media/image-upload-form";
 import { MemberProfileForm } from "@/features/members/profile-form";
 import { requireCurrentMember } from "@/server/auth/current-user";
 
 const upcomingAreas = [
   { label: "Experience", href: "/admin/profile/experience" },
   { label: "Education", href: "/admin/profile/education" },
-  { label: "Skills" },
-  { label: "Certifications" },
-  { label: "Achievements" },
-  { label: "Personal projects" },
-  { label: "Social links" },
+  { label: "Skills", href: "/admin/profile/skills" },
+  { label: "Certifications", href: "/admin/profile/certifications" },
+  { label: "Achievements", href: "/admin/profile/achievements" },
+  { label: "Personal projects", href: "/admin/profile/projects" },
+  { label: "Social links", href: "/admin/profile/links" },
 ] as const;
 
 export default async function MemberProfileDashboardPage() {
@@ -41,10 +42,18 @@ export default async function MemberProfileDashboardPage() {
               View public profile
             </Link>
           ) : null}
+          <Link className="rounded-full bg-[#ffb800] px-4 py-2 text-sm font-bold text-[#080808] transition hover:bg-[#ffc83d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb800]" href="/admin/profile/preview">
+            Preview profile
+          </Link>
         </div>
       </div>
 
-      <MemberProfileForm profile={member} />
+      <div className="mt-10">
+        <div className="mb-8 max-w-xl">
+          <ImageUploadForm currentUrl={member.profileImageUrl} target="profile" title="Profile portrait" />
+        </div>
+        <MemberProfileForm profile={member} />
+      </div>
 
       <section className="mt-12" aria-labelledby="portfolio-sections-heading">
         <div className="flex flex-wrap items-end justify-between gap-4">
@@ -56,21 +65,15 @@ export default async function MemberProfileDashboardPage() {
               Build out your story
             </h2>
           </div>
-          <p className="text-sm text-white/40">More editors are being added incrementally.</p>
+          <p className="text-sm text-white/40">Every section is editable from your workspace.</p>
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {upcomingAreas.map((area) =>
-            "href" in area ? (
-              <Link className="rounded-2xl border border-[#ffb800]/20 bg-[#ffb800]/5 p-5 text-sm font-semibold text-white/80 transition hover:border-[#ffb800]/50 hover:bg-[#ffb800]/10" href={area.href} key={area.label}>
-                {area.label} <span className="text-[#ffc83d]">→</span>
-              </Link>
-            ) : (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5 text-sm font-semibold text-white/45" key={area.label}>
-                {area.label} <span className="ml-2 text-xs font-medium uppercase tracking-[0.08em] text-white/25">Soon</span>
-              </div>
-            ),
-          )}
+          {upcomingAreas.map((area) => (
+            <Link className="rounded-2xl border border-[#ffb800]/20 bg-[#ffb800]/5 p-5 text-sm font-semibold text-white/80 transition hover:border-[#ffb800]/50 hover:bg-[#ffb800]/10" href={area.href} key={area.label}>
+              {area.label} <span className="text-[#ffc83d]">→</span>
+            </Link>
+          ))}
         </div>
       </section>
 

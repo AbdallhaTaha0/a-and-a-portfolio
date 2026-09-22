@@ -419,3 +419,12 @@ model Media {
 
   @@index([uploadedByUserId])
 }
+
+model RateLimitBucket {
+  key         String   @id @db.VarChar(160)
+  count       Int      @default(1)
+  windowStart DateTime
+  expiresAt   DateTime
+
+  @@index([expiresAt])
+}

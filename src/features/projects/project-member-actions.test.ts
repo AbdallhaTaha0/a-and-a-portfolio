@@ -10,11 +10,13 @@ const mocks = vi.hoisted(() => ({
   assignmentDelete: vi.fn(),
   auditCreate: vi.fn(),
   revalidatePath: vi.fn(),
+  checkAdminMutationLimit: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/server/auth/current-user", () => ({ requireTeamAdmin: mocks.requireTeamAdmin }));
 vi.mock("@/server/db/prisma", () => ({ prisma: { $transaction: mocks.transaction } }));
+vi.mock("@/server/security/admin-rate-limit", () => ({ checkAdminMutationLimit: mocks.checkAdminMutationLimit }));
 
 import { removeProjectMember, saveProjectMember } from "./project-member-actions";
 
@@ -31,6 +33,7 @@ function assignmentForm() {
 describe("project member actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.checkAdminMutationLimit.mockResolvedValue(null);
     mocks.requireTeamAdmin.mockResolvedValue({ id: "trusted-admin" });
     mocks.projectFindUnique.mockResolvedValue({ id: "trusted-project", slug: "project-slug" });
     mocks.memberFindUnique.mockResolvedValue({ id: "trusted-member" });

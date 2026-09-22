@@ -356,6 +356,17 @@ If external object storage is used:
 
 The database stores metadata, not binary file contents.
 
+### RateLimitBucket
+
+- `key` — HMAC-derived scope and identifier; raw IP addresses are not stored
+- `count`
+- `windowStart`
+- `expiresAt`
+
+Rate-limit updates use one PostgreSQL upsert so concurrent Vercel function instances share
+the same fixed-window counter. Expired keys are reset atomically and may be removed by a
+scheduled maintenance operation later.
+
 ## Indexing
 
 At minimum index:
@@ -375,6 +386,7 @@ At minimum index:
 - `ContactMessage.status`
 - `AuditLog.userId`
 - `AuditLog.entityType + entityId`
+- `RateLimitBucket.expiresAt`
 
 ## Delete behavior
 

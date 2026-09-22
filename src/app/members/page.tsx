@@ -11,6 +11,17 @@ export const metadata: Metadata = {
   title: "Team members",
   description: "Meet the people behind A&A and explore their public portfolios.",
   alternates: { canonical: "/members" },
+  openGraph: {
+    title: "Team members | A&A Portfolio",
+    description: "Meet the people behind A&A and explore their public portfolios.",
+    type: "website",
+    url: "/members",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Team members | A&A Portfolio",
+    description: "Meet the people behind A&A and explore their public portfolios.",
+  },
 };
 
 export default async function MembersPage() {

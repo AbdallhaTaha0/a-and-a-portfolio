@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   sessionDeleteMany: vi.fn(),
   auditCreate: vi.fn(),
   revalidatePath: vi.fn(),
+  checkAdminMutationLimit: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
@@ -20,6 +21,9 @@ vi.mock("@/server/auth/current-user", () => ({
 }));
 vi.mock("@/server/db/prisma", () => ({
   prisma: { $transaction: mocks.transaction },
+}));
+vi.mock("@/server/security/admin-rate-limit", () => ({
+  checkAdminMutationLimit: mocks.checkAdminMutationLimit,
 }));
 
 import {
@@ -33,6 +37,7 @@ import {
 describe("team account actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.checkAdminMutationLimit.mockResolvedValue(null);
     mocks.requireTeamAdmin.mockResolvedValue({
       id: "trusted-admin",
       email: "admin@example.com",
@@ -71,6 +76,30 @@ describe("team account actions", () => {
           auditLog: { create: mocks.auditCreate },
         }),
     );
+  });
+
+  it("blocks a sensitive account change before opening a transaction when rate limited", async () => {
+    mocks.checkAdminMutationLimit.mockResolvedValueOnce("Too many sensitive changes were attempted recently. Please try again later.");
+    const formData = new FormData();
+    formData.set("userId", "target-user");
+    formData.set("isActive", "false");
+
+    const result = await changeAccountStatus({ status: "idle", message: "" }, formData);
+
+    expect(result.status).toBe("error");
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("blocks repeated administrator invitations before creating an account", async () => {
+    mocks.checkAdminMutationLimit.mockResolvedValueOnce("Too many sensitive changes were attempted recently. Please try again later.");
+    const formData = new FormData();
+    formData.set("email", "another-admin@example.com");
+    formData.set("name", "Another Admin");
+
+    const result = await inviteAdministratorAccount({ status: "idle", message: "" }, formData);
+
+    expect(result.status).toBe("error");
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 
   it("links an administrator's own profile to the authenticated account", async () => {

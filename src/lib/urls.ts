@@ -10,3 +10,8 @@ export function safeExternalUrl(value: string | null | undefined) {
     return null;
   }
 }
+
+export function safeHttpsUrl(value: string | null | undefined) {
+  const url = safeExternalUrl(value);
+  return url?.startsWith("https://") ? url : null;
+}

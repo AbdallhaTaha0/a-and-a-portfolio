@@ -29,6 +29,7 @@ See:
 - `Design.md` — visual identity, components, motion, and responsive behavior
 - `API.md` — API/server action conventions
 - `Testing.md` — testing strategy
+- `Deployment.md` — Vercel, Neon, OAuth, Blob, smoke-test, and rollback checklist
 
 ## Local development
 
@@ -88,6 +89,8 @@ AUTH_ADMIN_EMAIL="YOUR_ADMIN_EMAIL"
 npm run lint
 npm run typecheck
 npm run test
+npm run test:e2e
+npm run test:e2e:fixtures
 npm run prisma:validate
 npm run prisma:generate
 npm run db:seed

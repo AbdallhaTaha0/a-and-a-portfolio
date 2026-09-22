@@ -13,6 +13,7 @@
 /coverage/
 /test-results/
 /playwright-report/
+/.auth/
 
 # Local environment files
 .env

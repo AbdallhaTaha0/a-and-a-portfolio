@@ -9,6 +9,7 @@ import {
 } from "@/features/members/profile-schema";
 import { requireCurrentMember } from "@/server/auth/current-user";
 import { prisma } from "@/server/db/prisma";
+import { deleteMediaIfUnreferenced } from "@/server/media/storage";
 
 export type ProfileActionState = {
   status: "idle" | "success" | "error";
@@ -67,6 +68,12 @@ export async function updateOwnProfile(
   revalidatePath("/admin/profile");
   revalidatePath("/members");
   revalidatePath(`/members/${member.slug}`);
+  if (
+    member.profileImageUrl &&
+    member.profileImageUrl !== (parsed.data.profileImageUrl ?? null)
+  ) {
+    await deleteMediaIfUnreferenced(member.profileImageUrl);
+  }
 
   return {
     status: "success",

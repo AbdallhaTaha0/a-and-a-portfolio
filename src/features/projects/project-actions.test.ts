@@ -10,12 +10,14 @@ const mocks = vi.hoisted(() => ({
   auditCreate: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn(),
+  checkAdminMutationLimit: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@/server/auth/current-user", () => ({ requireTeamAdmin: mocks.requireTeamAdmin }));
 vi.mock("@/server/db/prisma", () => ({ prisma: { $transaction: mocks.transaction } }));
+vi.mock("@/server/security/admin-rate-limit", () => ({ checkAdminMutationLimit: mocks.checkAdminMutationLimit }));
 
 import { createProject, deleteProject, updateProject } from "./project-actions";
 
@@ -34,9 +36,15 @@ function projectForm(includeId = false) {
 describe("administrator project actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.checkAdminMutationLimit.mockResolvedValue(null);
     mocks.requireTeamAdmin.mockResolvedValue({ id: "trusted-admin" });
     mocks.projectCreate.mockResolvedValue({ id: "new-project" });
-    mocks.projectFindUnique.mockResolvedValue({ id: "trusted-project", slug: "old-slug" });
+    mocks.projectFindUnique.mockResolvedValue({
+      id: "trusted-project",
+      slug: "old-slug",
+      thumbnailUrl: null,
+      images: [],
+    });
     mocks.projectUpdate.mockResolvedValue({});
     mocks.projectDelete.mockResolvedValue({});
     mocks.auditCreate.mockResolvedValue({});
@@ -45,6 +53,18 @@ describe("administrator project actions", () => {
       project: { create: mocks.projectCreate, findUnique: mocks.projectFindUnique, update: mocks.projectUpdate, delete: mocks.projectDelete },
       auditLog: { create: mocks.auditCreate },
     }));
+  });
+
+  it("blocks project deletion before its transaction when rate limited", async () => {
+    mocks.checkAdminMutationLimit.mockResolvedValueOnce("Too many sensitive changes were attempted recently. Please try again later.");
+    const formData = new FormData();
+    formData.set("projectId", "project-1");
+    formData.set("confirmation", "old-slug");
+
+    const result = await deleteProject(idle, formData);
+
+    expect(result.status).toBe("error");
+    expect(mocks.transaction).not.toHaveBeenCalled();
   });
 
   it("rejects unauthenticated or unauthorized project creation", async () => {

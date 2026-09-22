@@ -2,6 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 
 import logo from "../../logo.png";
+import { HomeHighlightSections } from "@/components/home/home-highlight-sections";
+import { ProjectCard } from "@/components/projects/project-card";
+import { PublicNavigation } from "@/components/site/public-header";
+import { ContactForm } from "@/features/contact/contact-form";
+import { getPublicHomeHighlights } from "@/server/home/public-home";
+import { getFeaturedProjects } from "@/server/projects/public-projects";
 import { getPublicTeam } from "@/server/team/team";
 
 const foundationItems = [
@@ -22,7 +28,12 @@ const fallbackTeam = {
 };
 
 export default async function Home() {
-  const team = (await getPublicTeam()) ?? fallbackTeam;
+  const [storedTeam, featuredProjects, highlights] = await Promise.all([
+    getPublicTeam(),
+    getFeaturedProjects(),
+    getPublicHomeHighlights(),
+  ]);
+  const team = storedTeam ?? fallbackTeam;
 
   return (
     <main className="relative z-10 mx-auto flex min-h-screen w-[min(calc(100%-2.5rem),80rem)] flex-col max-sm:w-[min(calc(100%-2rem),80rem)]">
@@ -31,7 +42,7 @@ export default async function Home() {
         className="flex min-h-24 items-center justify-between border-b border-white/10 max-sm:min-h-20"
       >
         <a
-          className="inline-flex rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-[#ffb800] focus-visible:ring-offset-4 focus-visible:ring-offset-[#080808]"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-[#ffb800] focus-visible:ring-offset-4 focus-visible:ring-offset-[#080808]"
           href="#top"
           aria-label="A&A home"
         >
@@ -43,20 +54,7 @@ export default async function Home() {
           </span>
         </a>
 
-        <div className="flex items-center gap-1">
-          <Link
-            className="rounded-full px-4 py-2 text-sm font-semibold text-white/65 transition hover:bg-white/5 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb800]"
-            href="/members"
-          >
-            Members
-          </Link>
-          <Link
-            className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold tracking-[0.08em] text-white/75 uppercase transition-colors hover:border-[#ffb800]/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb800]"
-            href="/login"
-          >
-            Team sign in
-          </Link>
-        </div>
+        <PublicNavigation />
       </nav>
 
       <section
@@ -85,6 +83,10 @@ export default async function Home() {
               </li>
             ))}
           </ul>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Link className="rounded-full bg-[#ffb800] px-6 py-3 text-sm font-bold text-[#080808] transition hover:bg-[#ffc83d] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[#ffb800]/40" href="/projects">View projects</Link>
+            <Link className="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white/75 transition hover:border-[#ffb800]/50 hover:text-white" href="/members">Meet the team</Link>
+          </div>
         </div>
 
         <div className="grid justify-items-center gap-5">
@@ -103,6 +105,21 @@ export default async function Home() {
           </p>
         </div>
       </section>
+
+      {featuredProjects.length ? (
+        <section className="border-t border-white/10 py-16 md:py-24" id="featured-projects">
+          <div className="flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <p className="text-xs font-bold tracking-[0.16em] text-[#ffc83d] uppercase">Selected work</p>
+              <h2 className="mt-3 font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-0.05em] sm:text-5xl">Featured projects</h2>
+            </div>
+            <Link className="text-sm font-semibold text-white/55 transition hover:text-white" href="/projects">View all projects →</Link>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {featuredProjects.map((project, index) => <ProjectCard eager={index < 3} key={project.slug} project={project} />)}
+          </div>
+        </section>
+      ) : null}
 
       {team.description || team.location || team.contactEmail ? (
         <section className="grid gap-8 border-t border-white/10 py-16 md:grid-cols-[minmax(0,1fr)_minmax(16rem,0.42fr)] md:py-24" id="about">
@@ -124,6 +141,38 @@ export default async function Home() {
           </aside>
         </section>
       ) : null}
+
+      <HomeHighlightSections highlights={highlights} />
+
+      <section
+        className="grid gap-10 border-t border-white/10 py-16 md:grid-cols-[minmax(0,0.7fr)_minmax(24rem,1fr)] md:py-24"
+        id="contact"
+      >
+        <div>
+          <p className="text-xs font-bold tracking-[0.16em] text-[#ffc83d] uppercase">
+            Start a conversation
+          </p>
+          <h2 className="mt-4 max-w-[12ch] font-[family-name:var(--font-display)] text-4xl font-bold tracking-[-0.05em] sm:text-5xl">
+            Bring us the next challenge.
+          </h2>
+          <p className="mt-6 max-w-xl text-base leading-8 text-white/60">
+            Share the goal, context, and timing. Your message goes directly to the
+            private team inbox.
+          </p>
+          {team.contactEmail ? (
+            <p className="mt-6 text-sm text-white/45">
+              Prefer email?{" "}
+              <a
+                className="font-semibold text-[#ffc83d] hover:underline"
+                href={`mailto:${team.contactEmail}`}
+              >
+                {team.contactEmail}
+              </a>
+            </p>
+          ) : null}
+        </div>
+        <ContactForm />
+      </section>
 
       <footer className="flex min-h-20 items-center justify-between gap-4 border-t border-white/10 text-xs text-white/50 max-sm:flex-col max-sm:items-start max-sm:justify-center">
         <p>Designed around the {team.name} identity.</p>

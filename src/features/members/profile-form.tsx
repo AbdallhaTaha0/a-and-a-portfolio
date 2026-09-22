@@ -44,7 +44,7 @@ export function MemberProfileForm({ profile }: { profile: EditableProfile }) {
   );
 
   return (
-    <form action={formAction} className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
+    <form action={formAction} className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:p-8">
         <div className="grid gap-6 sm:grid-cols-2">
           <label className="block sm:col-span-2">
